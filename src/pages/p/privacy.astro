@@ -1,0 +1,123 @@
+---
+// Privacy policy for the Yo app and its hub (what the hub and the app actually keep: yo/spec/v1.md).
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#9B59B6" />
+    <title>Yo – Privacy</title>
+    <meta name="description" content="What Yo keeps about you." />
+    <link rel="canonical" href="https://justyo.co/privacy" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet" />
+    <style>
+      html, body { margin: 0; background: #9B59B6; color: #fff; }
+      body { font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      main { max-width: 680px; margin: 0 auto; padding: 48px 20px 80px; }
+      h1, h2 { font-family: 'Montserrat', sans-serif; }
+      h1 { font-size: 44px; margin: 0 0 4px; }
+      h2 { font-size: 22px; margin: 36px 0 8px; }
+      a { color: #fff; }
+      .muted { opacity: 0.8; }
+      ul { padding-left: 1.2em; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1><a href="/" style="text-decoration:none">Yo</a> – Privacy</h1>
+      <p class="muted">Last updated: November 15, 2026</p>
+
+      <p>Yo is built to know as little about you as possible. Today you sign up with just a name; Yo does not ask for
+        your phone number, e‑mail address or address book. Messages are end-to-end encrypted on your iPhone; our server cannot read them.</p>
+
+      <h2>Who runs Yo</h2>
+      <p>Yo is Or Arbel's creation, first published in 2014 by Life Before Us, LLC. Its ownership is unchanged: the
+        Yo name, its look and the justyo.co domain are property of Or Arbel.</p>
+      <p>Christopher Eller (YoAgain, a private project) only operates the app and its server, with Or's blessing, and
+        takes care of your data under this policy.</p>
+
+      <h2>Who is responsible</h2>
+      <p>Christopher Eller, c/o Online-Impressum 12856, Europaring 90, 53757 Sankt Augustin, Germany. Contact: <a href="mailto:privacy@justyo.app">privacy@justyo.app</a>.</p>
+
+      <h2>What our server keeps</h2>
+      <ul>
+        <li><strong>Your name</strong> (the username you choose) and a random user id, so friends can find you.</li>
+        <li><strong>Public keys</strong> of your account and your iPhone, so friends can encrypt for you and the
+          server can check that requests come from your device.</li>
+        <li><strong>Messages waiting for delivery</strong>, end-to-end encrypted. The server cannot read them and
+          deletes them once your iPhone has received them, at the latest after 30 days.</li>
+        <li><strong>Photos and videos waiting to be fetched</strong>, end-to-end encrypted with a key only you and
+          your friend have, along with a random id, your user id, the size, how many devices still have to fetch it and
+          when it came. It is deleted as soon as the last device has fetched it, at the latest after 30 days, and when
+          you delete your account. It is not in our backups. We see neither the picture nor who receives it.</li>
+        <li><strong>Feedback you send from the app</strong>: its text, your user id, the app version and when. This
+          is not end-to-end encrypted: we read it, to make Yo better. It is kept until we have dealt with it; if you
+          delete your account first, it is kept without your user id.</li>
+        <li><strong>Crash reports</strong>, only if you allow it (Yo asks after its first crash; Settings › Help
+          Improve Yo turns it on or off): the app version, the iOS version, the iPhone model, the kind of crash and where in
+          the app's code it happened. They hold no Yos, names or photos, are sent without your account or user id and
+          are not linked to you. We keep them until we have fixed the crash, at the latest for one year.</li>
+        <li><strong>Who asks whom</strong>, for a contact request: a Yo to someone who has not said yes to you yet goes
+          with your user id, so the server can limit how many requests one account sends (a few per person and day).
+          Once they say yes, your Yos to them go sealed again and the server no longer sees that they are from you. The
+          daily counts are kept for two days.</li>
+        <li><strong>A daily count</strong> of the photos and videos you send and their size, to keep the server from
+          filling up; kept for two days.</li>
+        <li><strong>An encrypted backup</strong> of your account, if you secure it with a passkey or recovery key.
+          It is locked with keys only you have; we cannot open it, and we hand it out only to someone who proves to have
+          your passkey or recovery key.</li>
+        <li><strong>Your encrypted settings</strong>: your friends list, the people you blocked and your app icon,
+          locked with your account's key so that a new iPhone gets them back. We cannot open them; we see only roughly
+          how large they are (in steps of 1, 4, 16 or 60 KiB) and when they change. They are deleted with your account.</li>
+        <li><strong>A push token</strong> of your iPhone, so Apple can wake Yo when a Yo arrives.</li>
+        <li><strong>The app version</strong> your iPhone last used (for example "ios/202611140619"), so we can tell an
+          app that is too old to update.</li>
+        <li><strong>Your IP address</strong>, briefly, to limit abuse (for example how many accounts one address may
+          create per hour). It is kept in memory only and not stored.</li>
+      </ul>
+      <p>A name that is not secured is deleted, with its account, after 365 days without using Yo.</p>
+      <p>We keep this data to run Yo for you (Art. 6(1)(b) GDPR) and, for IP addresses and contact requests, to
+        protect Yo against abuse (our legitimate interest, Art. 6(1)(f) GDPR). Crash reports only with your consent
+        (Art. 6(1)(a) GDPR), which you can withdraw in Settings at any time.</p>
+
+      <h2>What we cannot see</h2>
+      <ul>
+        <li>The content of your Yos and of the photos and videos that come with them.</li>
+        <li>Your passkey, your recovery key, or anything that opens your backup.</li>
+      </ul>
+
+      <h2>On your iPhone</h2>
+      <p>Your account's keys and your recovery key stay on your iPhone, in its protected storage, as does your friends
+        list (besides its encrypted copy on our server). Signing out removes them from the iPhone. While a new
+        account is being created, its key waits in the iPhone's keychain until the server has taken the name. A photo or video you receive can be seen once and is then deleted
+        from your iPhone; until then it is kept out of backups.</p>
+      <p>So that you get your account back after reinstalling Yo or on a new iPhone with the same Apple Account, Yo also
+        keeps your username, user id, account key and, if you set one up, your recovery key in your iCloud Keychain,
+        end-to-end encrypted by Apple. Neither we nor our server receive it. With iCloud Keychain off, it stays on that
+        iPhone. Signing out marks it as signed out, so that Sign In can offer it again; deleting your account removes
+        it.</p>
+
+      <h2>Services we use</h2>
+      <ul>
+        <li><strong>Hetzner</strong> (Germany) hosts the server.</li>
+        <li><strong>Cloudflare</strong> carries the connection to the server and protects it against attacks; it
+          sees IP addresses and encrypted traffic.</li>
+        <li><strong>Apple</strong> delivers push notifications, TestFlight builds and the App Store, under Apple's
+          own privacy policy.</li>
+      </ul>
+      <p>Yo currently uses no advertising, analytics or tracking, and we do not sell your data.</p>
+
+      <h2>Your rights</h2>
+      <p>Under the GDPR you may ask what we store about you, have it corrected or deleted, restrict or object to its
+        processing, and take it with you. Write to <a href="mailto:privacy@justyo.app">privacy@justyo.app</a>. You may also
+        complain to a data protection authority.</p>
+
+      <h2>Changes</h2>
+      <p>If Yo starts to keep something new, this page says so before it does.</p>
+    </main>
+  </body>
+</html>

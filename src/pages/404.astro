@@ -1,0 +1,63 @@
+---
+// Every path the site has no page for lands here (GitHub Pages serves 404.html). justyo.co/NAME is a Yo invite:
+// with Yo installed iOS opens the app for it (apple-app-site-association); without, this page says who invites and
+// how to get Yo. The name is read in the browser only; nothing is sent anywhere.
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#9B59B6" />
+    <meta name="robots" content="noindex" />
+    <title>Yo</title>
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet" />
+    <style>
+      html, body { margin: 0; height: 100%; background: #9B59B6; color: #fff; font-family: 'Montserrat', sans-serif; }
+      main {
+        min-height: 100%; box-sizing: border-box; padding: 2rem 1rem; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 1.25rem; text-align: center;
+      }
+      .yo { font-size: clamp(5rem, 24vw, 12rem); line-height: 1; }
+      h1 { margin: 0; font-size: clamp(1.5rem, 6vw, 2.5rem); line-height: 1.2; overflow-wrap: anywhere; }
+      p { margin: 0; max-width: 28rem; font-size: 1.05rem; line-height: 1.45; opacity: .9; }
+      a.button {
+        display: inline-block; margin-top: .5rem; padding: .9rem 2.2rem; border-radius: 999px; background: #fff;
+        color: #9B59B6; text-decoration: none; font-size: 1.15rem;
+      }
+      a.plain { color: #fff; opacity: .85; }
+      [hidden] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="yo">Yo</div>
+      <div id="invite" hidden>
+        <h1><span id="name"></span> wants to Yo you.</h1>
+        <p style="margin-top:1rem">Get Yo, then open this link again, or add <strong id="name2"></strong> in Yo.</p>
+        <a class="button" href="https://testflight.apple.com/join/V3wa1DeX">Get Yo</a>
+      </div>
+      <div id="lost">
+        <h1>Nothing here.</h1>
+        <p><a class="plain" href="/">justyo.co</a></p>
+      </div>
+    </main>
+    <script is:inline>
+      // A username (spec 3.3): 3 to 16 characters of letters, digits, _ and emoji, in one path part.
+      let part = '';
+      try { part = decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, '')); } catch {}
+      const count = [...new Intl.Segmenter().segment(part)].length;
+      if (count >= 3 && count <= 16 && /^[\p{L}\p{M}\p{N}_\p{Extended_Pictographic}\p{Emoji_Component}\u200d]+$/u.test(part)) {
+        document.getElementById('name').textContent = part;
+        document.getElementById('name2').textContent = part;
+        document.getElementById('invite').hidden = false;
+        document.getElementById('lost').hidden = true;
+        document.title = `${part} wants to Yo you`;
+      }
+    </script>
+  </body>
+</html>
