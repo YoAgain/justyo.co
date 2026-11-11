@@ -5,9 +5,63 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#9B59B6" />
     <title>Yo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet" />
+    <style>
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #9B59B6;
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      main {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+      }
+      button {
+        all: unset;
+        cursor: pointer;
+        font-size: clamp(6rem, 28vw, 18rem);
+        line-height: 1;
+        user-select: none;
+      }
+      button.yo { animation: yo 0.35s ease-out; }
+      @keyframes yo {
+        0% { transform: scale(1); }
+        40% { transform: scale(1.15) rotate(-4deg); }
+        100% { transform: scale(1); }
+      }
+      p {
+        margin: 0;
+        font-size: clamp(0.9rem, 2.5vw, 1.25rem);
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        opacity: 0.8;
+      }
+    </style>
   </head>
   <body>
-    <h1>Yo!</h1>
+    <main>
+      <button id="yo" aria-label="Yo">Yo</button>
+      <p>Is back. Soon.</p>
+    </main>
+    <script>
+      const yo = document.getElementById('yo');
+      yo.addEventListener('click', () => {
+        yo.classList.remove('yo');
+        void yo.offsetWidth;
+        yo.classList.add('yo');
+        navigator.vibrate?.(60);
+      });
+    </script>
   </body>
 </html>
