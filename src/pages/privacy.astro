@@ -1,0 +1,92 @@
+---
+// Privacy policy for the Yo app and its hub (what the hub and the app actually keep: yo/spec/v1.md).
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#9B59B6" />
+    <title>Yo – Privacy</title>
+    <meta name="description" content="What Yo keeps about you." />
+    <link rel="canonical" href="https://justyo.co/privacy" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet" />
+    <style>
+      html, body { margin: 0; background: #9B59B6; color: #fff; }
+      body { font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      main { max-width: 680px; margin: 0 auto; padding: 48px 20px 80px; }
+      h1, h2 { font-family: 'Montserrat', sans-serif; }
+      h1 { font-size: 44px; margin: 0 0 4px; }
+      h2 { font-size: 22px; margin: 36px 0 8px; }
+      a { color: #fff; }
+      .muted { opacity: 0.8; }
+      ul { padding-left: 1.2em; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1><a href="/" style="text-decoration:none">Yo</a> – Privacy</h1>
+      <p class="muted">Last updated: November 13, 2026</p>
+
+      <p>Yo is built to know as little about you as possible. Today you sign up with just a name; Yo does not ask for
+        your phone number, e‑mail address or address book. Messages are end-to-end encrypted on your iPhone; our server cannot read them.</p>
+
+      <h2>Who runs Yo</h2>
+      <p>Yo is Or Arbel's creation, first published in 2014 by Life Before Us, LLC. Its ownership is unchanged: the
+        Yo name, its look and the justyo.co domain are property of Or Arbel.</p>
+      <p>Christopher Eller (YoAgain, a private project) only operates the app and its server, with Or's blessing, and
+        takes care of your data under this policy.</p>
+
+      <h2>Who is responsible</h2>
+      <p>Christopher Eller, c/o Online-Impressum 12856, Europaring 90, 53757 Sankt Augustin, Germany. Contact: <a href="mailto:privacy@justyo.app">privacy@justyo.app</a>.</p>
+
+      <h2>What our server keeps</h2>
+      <ul>
+        <li><strong>Your name</strong> (the username you choose) and a random user id, so friends can find you.</li>
+        <li><strong>Public keys</strong> of your account and your iPhone, so friends can encrypt for you and the
+          server can check that requests come from your device.</li>
+        <li><strong>Messages waiting for delivery</strong>, end-to-end encrypted. The server cannot read them and
+          deletes them once your iPhone has received them, at the latest after 30 days.</li>
+        <li><strong>An encrypted backup</strong> of your account, if you secure it with a passkey or recovery key.
+          It is locked with keys only you have; we cannot open it.</li>
+        <li><strong>A push token</strong> of your iPhone, so Apple can wake Yo when a Yo arrives.</li>
+        <li><strong>Your IP address</strong>, briefly, to limit abuse (for example how many accounts one address may
+          create per hour). It is kept in memory only and not stored.</li>
+      </ul>
+      <p>A name that is not secured is deleted, with its account, after 90 days without using Yo.</p>
+      <p>We keep this data to run Yo for you (Art. 6(1)(b) GDPR) and, for IP addresses, to protect Yo against abuse
+        (our legitimate interest, Art. 6(1)(f) GDPR).</p>
+
+      <h2>What we cannot see</h2>
+      <ul>
+        <li>The content of your Yos (and, later, the photos, videos and texts that come with them).</li>
+        <li>Your passkey, your recovery key, or anything that opens your backup.</li>
+      </ul>
+
+      <h2>On your iPhone</h2>
+      <p>Your friends list, your account's keys and your recovery key stay on your iPhone, in its protected storage.
+        Signing out removes them from the iPhone.</p>
+
+      <h2>Services we use</h2>
+      <ul>
+        <li><strong>Hetzner</strong> (Germany) hosts the server.</li>
+        <li><strong>Cloudflare</strong> carries the connection to the server and protects it against attacks; it
+          sees IP addresses and encrypted traffic.</li>
+        <li><strong>Apple</strong> delivers push notifications, TestFlight builds and the App Store, under Apple's
+          own privacy policy.</li>
+      </ul>
+      <p>Yo currently uses no advertising, analytics or tracking, and we do not sell your data.</p>
+
+      <h2>Your rights</h2>
+      <p>Under the GDPR you may ask what we store about you, have it corrected or deleted, restrict or object to its
+        processing, and take it with you. Write to <a href="mailto:privacy@justyo.app">privacy@justyo.app</a>. You may also
+        complain to a data protection authority.</p>
+
+      <h2>Changes</h2>
+      <p>If Yo starts to keep something new, this page says so before it does.</p>
+    </main>
+  </body>
+</html>
