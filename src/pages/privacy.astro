@@ -50,6 +50,12 @@
           server can check that requests come from your device.</li>
         <li><strong>Messages waiting for delivery</strong>, end-to-end encrypted. The server cannot read them and
           deletes them once your iPhone has received them, at the latest after 30 days.</li>
+        <li><strong>Photos and videos waiting to be fetched</strong>, end-to-end encrypted with a key only you and
+          your friend have, along with a random id, your user id, the size, how many devices still have to fetch it and
+          when it came. It is deleted as soon as the last device has fetched it, at the latest after 30 days, and when
+          you delete your account. It is not in our backups. We see neither the picture nor who receives it.</li>
+        <li><strong>A daily count</strong> of the photos and videos you send and their size, to keep the server from
+          filling up; kept for two days.</li>
         <li><strong>An encrypted backup</strong> of your account, if you secure it with a passkey or recovery key.
           It is locked with keys only you have; we cannot open it.</li>
         <li><strong>A push token</strong> of your iPhone, so Apple can wake Yo when a Yo arrives.</li>
@@ -62,13 +68,14 @@
 
       <h2>What we cannot see</h2>
       <ul>
-        <li>The content of your Yos (and, later, the photos, videos and texts that come with them).</li>
+        <li>The content of your Yos and of the photos and videos that come with them.</li>
         <li>Your passkey, your recovery key, or anything that opens your backup.</li>
       </ul>
 
       <h2>On your iPhone</h2>
       <p>Your friends list, your account's keys and your recovery key stay on your iPhone, in its protected storage.
-        Signing out removes them from the iPhone.</p>
+        Signing out removes them from the iPhone. A photo or video you receive can be seen once and is then deleted
+        from your iPhone; until then it is kept out of backups.</p>
 
       <h2>Services we use</h2>
       <ul>
