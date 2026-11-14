@@ -19,6 +19,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      # Links to justyo.co/NAME open Yo (an invite): iOS reads which apps may take them from this file. The team id
+      # comes from the repository's secret, not from the code.
+      - name: apple-app-site-association
+        env:
+          TEAM: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          [ -n "$TEAM" ] || { echo "no APPLE_TEAM_ID: no invite links"; exit 0; }
+          mkdir -p public/.well-known
+          cat > public/.well-known/apple-app-site-association <<JSON
+          {"applinks":{"details":[{"appIDs":["$TEAM.app.justyo.ios","$TEAM.app.justyo.ios.dev"],
+          "components":[{"/":"/","exclude":true},{"/":"/privacy*","exclude":true},{"/":"/_astro/*","exclude":true},
+          {"/":"/*.*","exclude":true},{"/":"/*"}]}]}}
+          JSON
+          python3 -m json.tool public/.well-known/apple-app-site-association > /dev/null
       - uses: withastro/action@v6
 
   deploy:
