@@ -1,0 +1,33 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "NL9YA3V25N.app.justyo.ios",
+          "NL9YA3V25N.app.justyo.ios.dev"
+        ],
+        "components": [
+          {
+            "/": "/",
+            "exclude": true
+          },
+          {
+            "/": "/privacy*",
+            "exclude": true
+          },
+          {
+            "/": "/_astro/*",
+            "exclude": true
+          },
+          {
+            "/": "/*.*",
+            "exclude": true
+          },
+          {
+            "/": "/*"
+          }
+        ]
+      }
+    ]
+  }
+}
