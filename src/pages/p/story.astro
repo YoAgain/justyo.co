@@ -21,6 +21,8 @@ const press = media.videos.filter((v) => v.kind === 'press' && big.includes(v.ou
 // Everything that fits none of TV, On stage and Yo's ads: the smaller outlets and channels, under Other.
 const other = media.videos.filter((v) => !press.includes(v) && v.kind !== 'talk');
 const talks = media.videos.filter((v) => v.kind === 'talk'); // Or's own talks, all of them
+// A yellow tag on a tile: Tokyo is the talk where Or explains Yo's idea best (yo-lore/research/or-on-stage-2026-11-16.html).
+const tags: Record<string, string> = { Im_VWd_eApI: 'Philosophy behind Yo' };
 
 // One player, three lists beside it. Only YouTube plays in place; the rest opens at the outlet.
 const yt = (url: string) => url.match(/[?&]v=([\w-]{11})/)?.[1];
@@ -165,6 +167,11 @@ const description =
         background: linear-gradient(180deg, #FFE36E, #F1C40F); box-shadow: 0 8px 16px -6px rgba(30, 0, 50, 0.7); transition: transform 0.15s; }
       .play::after { content: ""; position: absolute; left: 17px; top: 13px; border: 9px solid transparent; border-left: 14px solid #8E44AD; border-right: 0; }
       .thumb:hover .play { transform: scale(1.1); }
+      .thumb .tag { position: absolute; left: 8px; top: 8px; padding: 5px 10px; border-radius: 999px; color: #8E44AD;
+        background: linear-gradient(180deg, #FFE36E, #F1C40F); box-shadow: 0 4px 10px -4px rgba(40, 5, 70, 0.6);
+        font: 800 10.5px/1 'Montserrat', sans-serif; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap;
+        max-width: calc(100% - 16px); box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; }
+      @media (max-width: 600px) { .thumb .tag { left: 6px; top: 6px; max-width: calc(100% - 12px); padding: 4px 7px; font-size: 8.5px; letter-spacing: 0.02em; } }
       .screen :global(iframe) { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
       .side { display: flex; flex-direction: column; min-height: 0; }
       .tabs { display: flex; gap: 4px; padding: 3px; border-radius: 999px; background: rgba(50, 10, 80, 0.22); align-self: flex-start;
@@ -277,9 +284,10 @@ const description =
                 <li>
                   {c.id ? (
                     <div class="item">
-                      <button type="button" class="thumb" data-id={c.id} data-title={c.title} aria-label={`Play: ${c.outlet}, ${c.title}`}>
+                      <button type="button" class="thumb" data-id={c.id} data-title={c.title} aria-label={`Play: ${c.outlet}, ${c.title}${c.id && tags[c.id] ? ` (${tags[c.id]})` : ''}`}>
                         <img src={`/img/videos/${c.id}.webp`} alt="" width="320" height="180" loading="lazy" />
                         <span class="play" aria-hidden="true"></span>
+                        {c.id && tags[c.id] && <span class="tag">{tags[c.id]}</span>}
                       </button>
                       <span class="txt"><span class="io">{c.outlet}</span><span class="it">{c.title}</span></span>
                     </div>
