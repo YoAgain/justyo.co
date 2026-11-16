@@ -1,6 +1,6 @@
 ---
 // An iPhone 6 (space grey) drawn in CSS around a page in an iframe, its screen 375 x 667 points as on the real one,
-// shown at 72 % (64 % on the narrowest phones). Story uses it for the rebuilt app of 2014 and 2015 (public/p/app.html).
+// scaled to 72 % (64 % on the narrowest phones). Story uses it for the rebuilt app of 2014 and 2015 (public/p/app.html).
 //
 //   src    the page on the screen
 //   title  the iframe's title (what a screen reader hears for the screen)
@@ -9,14 +9,18 @@
 interface Props { src: string; title: string; label: string; id?: string }
 const { src, title, label, id } = Astro.props;
 ---
-<div class="iphone" aria-label={label}>
+<div class="fit"><div class="iphone" aria-label={label}>
   <span class="cam" aria-hidden="true"></span><span class="speaker" aria-hidden="true"></span>
   <iframe id={id} src={src} width="375" height="667" title={title}></iframe>
   <span class="home" aria-hidden="true"></span>
-</div>
+</div></div>
 <style>
+  /* The phone is drawn at full size (419 x 869) and scaled down as one picture; the box around it takes the scaled size.
+     (Not CSS zoom: Safari on iPhone then gives the page in the iframe a smaller screen than 375 x 667.) */
+  .fit { --k: 0.72; width: calc(419px * var(--k)); height: calc(869px * var(--k)); }
   .iphone {
-    position: relative; width: 375px; padding: 98px 22px 104px; margin: 0; border-radius: 58px; zoom: 0.72;
+    position: relative; width: 375px; padding: 98px 22px 104px; margin: 0; border-radius: 58px;
+    transform: scale(var(--k)); transform-origin: 0 0;
     background: linear-gradient(145deg, #4a4a4f 0%, #2b2b2f 45%, #1d1d20 100%);
     box-shadow: inset 0 0 0 2px #6d6d73, inset 0 0 0 5px #222225, 0 30px 60px -24px rgba(40, 5, 70, 0.8);
   }
@@ -32,5 +36,5 @@ const { src, title, label, id } = Astro.props;
   .speaker { position: absolute; top: 47px; left: calc(50% - 26px); width: 52px; height: 6px; border-radius: 3px; background: #0e0e10; }
   .home { position: absolute; bottom: 24px; left: calc(50% - 28px); width: 56px; height: 56px; border-radius: 50%;
     background: linear-gradient(145deg, #1c1c1f, #303034); box-shadow: inset 0 0 0 2px #55555b; }
-  @media (max-width: 350px) { .iphone { zoom: 0.64; } }
+  @media (max-width: 350px) { .fit { --k: 0.64; } }
 </style>
