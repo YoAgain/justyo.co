@@ -43,6 +43,8 @@ const feature = outlets.find((m) => m.name === 'The Wall Street Journal')!;
 const sour = /hack|stupid|dumbest|terrible|destroy|trust|blame|meeellion|annoying|is dead|dies|died|falter|drama|security|somehow|still a thing/i;
 // The hack stays in where the story is how Or handled it (he hired one of the hackers).
 const kind = media.articles.filter((a) => !sour.test(a.title) || /hires|hiring/i.test(a.title));
+// Names too long for the outlet plate, in the short form the outlets use themselves.
+const short: Record<string, string> = { 'International Business Times': 'IBTimes', 'American Journalism Review': 'AJR' };
 const monthOf = (d: string) =>
   new Date(`${d.slice(0, 7)}-01`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', timeZone: 'UTC' });
 const months: { month: string; items: typeof kind }[] = [];
@@ -305,7 +307,7 @@ const description =
               {g.items.map((a) => (
                 <li>
                   <a href={a.url} rel="noopener" target="_blank">
-                    <span class="plate"><Wordmark name={a.outlet === 'International Business Times' ? 'IBTimes' : a.outlet} mark={markFor(a.outlet)} size={13} dark /></span>
+                    <span class="plate"><Wordmark name={short[a.outlet] ?? a.outlet} mark={markFor(a.outlet)} size={13} dark /></span>
                     <span class="at" title={a.title}>{a.title}</span>
                   </a>
                 </li>
