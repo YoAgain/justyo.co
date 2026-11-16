@@ -3,12 +3,14 @@
 // - A tap on a name: the sound, and the bar says "Sent Yo", one "!" for each tap after the first, each coming in on its
 //   own, at most five, then " +n" (ShareBridge.bangs, Bangs); the count moves on at most every 0.2 s. 1.5 s after the
 //   last tap the bar says its name again and goes on top (showSent, thenOnTop).
-// - Then, 1.5 to 4 s later, the friend Yos back: the sound, "Yo" at the bar's end, which knocks as it comes, and the
-//   bar goes on top (applyArrivals, land, rise). The "Yo" stands 3 s, its "!"s go one by one, and it fades out by
-//   5 s (yoSolidSeconds, yoSeconds). While you are still tapping, the list does not move (rise waits for `sending`).
-// - A group's bar: a Yo goes to all its members; one or two of them Yo back, each a line under the group's name
-//   ("MOM: Yo!!", SenderBlocks), the bar growing by a bar's height for each; the lines go as a friend's "Yo" does,
-//   then the bar shrinks back.
+// - Every friend you Yo Yos back, 1.2 to 3 s after your Yo went, the replies to several friends staggered so they come
+//   one after another: the sound, "Yo" at the bar's end, which knocks as it comes, and the bar goes on top (Inbox.show,
+//   applyArrivals, land, rise). A friend has one reply on its way at most: more taps before it came do not add or
+//   delay one. The "Yo" stands 3 s, its "!"s go one by one, and it fades out by 5 s (yoSolidSeconds, yoSeconds).
+//   While you are still tapping, the list does not move (rise waits for `sending`).
+// - A group's bar: a Yo goes to all its members; one of them Yos back, a line under the group's name ("MOM: Yo!!",
+//   SenderBlocks), the bar growing by a bar's height for it; the lines go as a friend's "Yo" does, then the bar
+//   shrinks back.
 // - Going on top is a delete and an insert, as the app's list does it: the bar's place fades, the bars above slide
 //   down one, the bar comes in from the top (transform and opacity only).
 // - "+" opens the name field (addRow): what may be typed is the app's (username_canonical: Latin letters, accents
@@ -16,8 +18,8 @@
 //   (Friends.add, nextColor); a name already there says "Already Added" on its bar; one under 3 characters the hub
 //   would not know: "No Such User", and the field shakes. Escape or a tap elsewhere closes it. Nothing leaves the
 //   page; a reload starts again.
-// - Camera mode (the camera button): the bars see-through over a picture, a tap "sends a photo" ("Sent 📷", the undo
-//   ring for 2 s, then as a send); "✕" or Escape closes it. No camera is used. "•••": Invite, Add Group, Settings;
+// - Camera mode (the camera button): the bars see-through over a picture, a tap "sends a photo" (the shutter's click
+//   when it takes one from the live picture, "Sent 📷", the undo ring for 2 s, then as a send); "✕" or Escape closes it. No camera is used. "•••": Invite, Add Group, Settings;
 //   Add Group is the app's sheet (a name, the friends to pick, Create) and puts the group's bar on top.
 // - autoplay: now and then a Yo arrives by itself while the phone is in view; silent until the visitor has made a Yo.
 // - banner: an arriving Yo also drops the app's notification in ("Yo", "From MIA", "From LEO @ FAMILY") (the app shows none while open; for pages that want it).
@@ -25,12 +27,16 @@
 //
 // Every phone on the page is its own: initYoPhones() starts each once; getYoPhone(el) returns one to drive it.
 
-import { heard, playYo } from '../../lib/yo-sound';
+import { heard, playShutter, playYo } from '../../lib/yo-sound';
 
 const SENT_SECONDS = 1.5;
 const YO_SOLID_SECONDS = 3;
 const YO_SECONDS = 5;
 const MOST_BANGS = 5;
+// A friend Yos back between these many seconds after your Yo went; replies to several friends come at least
+// REPLY_GAP_SECONDS apart (and up to 0.7 s more).
+const REPLY_SECONDS = [1.2, 3];
+const REPLY_GAP_SECONDS = 0.6;
 const ROWS = ['#1ABC9C', '#2ECC71', '#3498DB', '#34495E', '#16A085', '#F1C40F', '#2980B9', '#8E44AD'];
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait = (ms: number) => new Promise((ok) => setTimeout(ok, ms));
@@ -94,7 +100,7 @@ type Bar = {
   sentTimer: number;
   tick: number;
   nextTick: number;
-  back: number[]; // the Yos back, waiting
+  back: number; // the timer of the one Yo back on its way, 0 when none is
   got: number; // Yos on the bar now
   gotRun: number; // to tell a run's timers from the next one's
 };
@@ -126,6 +132,7 @@ export class YoPhone {
   private push?: HTMLElement;
   private pushTimer = 0;
   private rising: Bar[] = [];
+  private lastReply = 0; // when the latest Yo back is due (performance.now() time)
   private visible = false;
   private screen: string;
 
@@ -158,6 +165,14 @@ export class YoPhone {
         tap(head.closest('li'));
       });
       this.push?.addEventListener('click', () => this.hideBanner());
+      // A glass button clicked from the keyboard (a click with no pointer, detail 0) lights up as a press does, briefly.
+      root.querySelectorAll<HTMLElement>('.fab, .zoom').forEach((b) =>
+        b.addEventListener('click', (e) => {
+          if (e.detail !== 0) return;
+          b.classList.add('pressed');
+          setTimeout(() => b.classList.remove('pressed'), 150);
+        }),
+      );
       root.querySelector('.fab.cam')?.addEventListener('click', () => this.setCamera(!this.camera));
       root.querySelector('.fab.menu')?.addEventListener('click', (e) => { e.stopPropagation(); this.setMenu(!root.classList.contains('menu-open')); });
       root.querySelectorAll<HTMLButtonElement>('.pop button').forEach((b) =>
@@ -228,7 +243,7 @@ export class YoPhone {
       tail: li.querySelector('.tail')!,
       end: li.querySelector('.end')!,
       lines: li.querySelector<HTMLElement>('.lines') ?? undefined,
-      sent: 0, sentTimer: 0, tick: 0, nextTick: 0, back: [], got: 0, gotRun: 0,
+      sent: 0, sentTimer: 0, tick: 0, nextTick: 0, back: 0, got: 0, gotRun: 0,
     };
     this.bars.set(li, bar);
     return bar;
@@ -274,19 +289,36 @@ export class YoPhone {
     }, Math.max(0, bar.nextTick - performance.now()));
     clearTimeout(bar.sentTimer);
     bar.sentTimer = window.setTimeout(() => this.sentOver(bar, true), SENT_SECONDS * 1000);
-    // Yos back once the taps are over, 1.5 to 4 s after the last one: the friend, or one or two of the group.
-    bar.back.forEach(clearTimeout);
-    const from = bar.members ? [...bar.members].sort(() => Math.random() - 0.5).slice(0, 1 + Math.round(Math.random())) : [undefined];
-    let at = (SENT_SECONDS + 1.5 + Math.random() * 2.5) * 1000;
-    bar.back = from.map((member) => {
-      const timer = window.setTimeout(() => this.receive(bar, member), at);
-      at += 500 + Math.random() * 900;
-      return timer;
-    });
+    this.replyLater(bar, 0);
   }
 
-  /** Camera mode: the shutter, the bar says "Sent 📷" with the undo ring for 2 s (sendDelay), then as a send. */
+  /**
+   * The friend (or one of the group) Yos back, `after` ms plus 1.2 to 3 s from now, and at least 0.6 to 1.3 s after
+   * the Yo back before it, so replies to several friends arrive one by one. A friend with a reply already on its way
+   * keeps that one: no second reply is added and the first is not put off.
+   */
+  private replyLater(bar: Bar, after: number) {
+    if (bar.back) return;
+    const now = performance.now();
+    const [least, most] = REPLY_SECONDS;
+    const due = Math.max(
+      now + after + (least + Math.random() * (most - least)) * 1000,
+      this.lastReply + (REPLY_GAP_SECONDS + Math.random() * 0.7) * 1000,
+    );
+    this.lastReply = due;
+    const member = bar.members ? pick(bar.members) : undefined;
+    bar.back = window.setTimeout(() => {
+      bar.back = 0;
+      this.receive(bar, member);
+    }, due - now);
+  }
+
+  /**
+   * Camera mode: the shutter (its flash and its click, only when the photo is taken from the live picture, as the
+   * app's Haptic.shutter), the bar says "Sent 📷" with the undo ring for 2 s (sendDelay), then as a send.
+   */
   private sendPhoto(bar: Bar) {
+    if (!this.picked) playShutter();
     const flash = this.root.querySelector<HTMLElement>('.flash');
     if (flash && !reduced() && !this.picked) {
       flash.classList.remove('go');
@@ -305,9 +337,8 @@ export class YoPhone {
       head.querySelector('.ring')?.remove();
       bar.sentTimer = window.setTimeout(() => this.sentOver(bar, true), SENT_SECONDS * 1000);
     }, 2000);
-    bar.back.forEach(clearTimeout);
-    const member = bar.members ? pick(bar.members) : undefined;
-    bar.back = [window.setTimeout(() => this.receive(bar, member), (2 + SENT_SECONDS + 1.5 + Math.random() * 2.5) * 1000)];
+    // The photo goes when the ring is over, 2 s from now; the Yo back counts from then.
+    this.replyLater(bar, 2000);
   }
 
   // ---- Camera mode, the menu, Add Group ----
@@ -656,8 +687,8 @@ export class YoPhone {
     await wait(2500 + Math.random() * 2000);
     for (;;) {
       if (this.visible && !document.hidden && this.screen === 'list' && !this.input) {
-        // Not the top bar (it would not move): one further down, not busy.
-        const calm = this.order().slice(1).filter((b) => !b.sent && !b.got);
+        // Not the top bar (it would not move): one further down, not busy and with no Yo back on its way.
+        const calm = this.order().slice(1).filter((b) => !b.sent && !b.got && !b.back);
         if (calm.length) {
           const bar = pick(calm);
           this.receive(bar, bar.members ? pick(bar.members) : undefined);
