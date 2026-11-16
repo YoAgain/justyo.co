@@ -1,0 +1,88 @@
+---
+// Yo Philosophy: the founder's three principles, one at a time beside a large translucent quotation mark, every "Yo" in
+// yellow. Each stays as long as it takes to read, 3 to 6 s (not while hovered or focused, and not at all with reduced
+// motion); the dots switch by hand. Each line is Or Arbel's own, signed with where he said it, and links to that
+// second. Without JavaScript all three stand one under the other.
+// Only talks where Or speaks alone; MobileBeat is left out because Or and Moshe Hogeg share the stage there.
+// Transcripts and why these three: yo-lore/research/or-on-stage-2026-11-16.html.
+const yt = (id: string, s: number) => `https://www.youtube.com/watch?v=${id}&t=${s}s`;
+const at = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+// every "Yo" in yellow, the rest white
+const parts = (q: string) => q.split(/\b(Yo)\b/);
+const lines = [
+  { q: 'Nothing but Yo, and that Yo means everything.', id: 'Xc0A3Kx6878', where: 'London, 2014', s: 323 },
+  { q: 'Communicate without actually saying anything.', id: 'TDrlBRTqIzE', where: 'Lisbon, 2015', s: 37 },
+  { q: 'If I’m communicating with someone on a daily basis … I know what their Yo means.', id: 'Im_VWd_eApI', where: 'Tokyo, 2014', s: 1920 },
+];
+---
+<section class="philo" id="philosophy" aria-label="Yo Philosophy" data-philo>
+  <div class="stage">
+    <span class="mark" aria-hidden="true">“</span>
+    <ol>
+      {lines.map((x, i) => (
+        <li class={i === 0 ? 'on' : ''}>
+          <a href={yt(x.id, x.s)} rel="noopener" target="_blank" aria-label={`“${x.q}” Or Arbel, founder of Yo, ${x.where}. Watch at ${at(x.s)}.`}>
+            <span class="q">{parts(x.q).map((p, j) => (j % 2 ? <em>{p}</em> : p))}</span>
+            <span class="by">Or Arbel, founder of Yo · {x.where} ↗</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </div>
+  <div class="dots" role="group" aria-label="Principle">
+    {lines.map((_, i) => <button type="button" aria-label={`Principle ${i + 1}`} aria-pressed={i === 0 ? 'true' : 'false'}></button>)}
+  </div>
+</section>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('[data-philo]')) {
+    const items = [...root.querySelectorAll<HTMLElement>('li')];
+    const dots = [...root.querySelectorAll<HTMLButtonElement>('.dots button')];
+    let n = 0;
+    const show = (i: number) => {
+      n = (i + items.length) % items.length;
+      items.forEach((el, j) => el.classList.toggle('on', j === n));
+      dots.forEach((b, j) => b.setAttribute('aria-pressed', String(j === n)));
+    };
+    dots.forEach((b, j) => b.addEventListener('click', () => show(j)));
+    let held = false; // not while the reader is on it
+    root.addEventListener('pointerenter', () => (held = true));
+    root.addEventListener('pointerleave', () => (held = false));
+    root.addEventListener('focusin', () => (held = true));
+    root.addEventListener('focusout', () => (held = false));
+    // as long as the line takes to read: a third of a second a word, 3 s at least, 6 s at most
+    const stay = (el: HTMLElement) => Math.min(6000, Math.max(3000, (el.querySelector('.q')?.textContent ?? '').split(/\s+/).length * 330));
+    const tick = () => setTimeout(() => { if (!held && !document.hidden) show(n + 1); tick(); }, held ? 1000 : stay(items[n]));
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) tick();
+  }
+</script>
+
+<style>
+  .philo { max-width: 1000px; margin: 0 auto; padding: clamp(48px, 8vw, 96px) 20px; box-sizing: border-box; text-align: center; }
+  .stage { position: relative; }
+  /* the quotation mark: big, translucent, up and to the left of the words, not behind them */
+  .mark { position: absolute; left: clamp(-8px, 2vw, 40px); top: clamp(-36px, -3vw, -20px); font: 900 clamp(7rem, 20vw, 13rem)/0.8 Georgia, serif;
+    color: #fff; opacity: 0.18; pointer-events: none; user-select: none; }
+  ol { position: relative; list-style: none; margin: 0; padding: 0; display: grid; gap: 36px; }
+  /* with JavaScript the three share one place and take turns */
+  :global(.js) .philo ol { gap: 0; }
+  :global(.js) .philo li { grid-area: 1 / 1; opacity: 0; visibility: hidden; transition: opacity 0.6s, visibility 0s 0.6s; }
+  :global(.js) .philo li.on { opacity: 1; visibility: visible; transition: opacity 0.6s 0.2s, visibility 0s; }
+  li { display: flex; align-items: center; justify-content: center; }
+  a { display: flex; flex-direction: column; align-items: center; gap: 16px; color: #fff; text-decoration: none; }
+  .q { max-width: 22ch; text-wrap: balance; font: 900 clamp(1.7rem, 5vw, 3.1rem)/1.12 'Montserrat', sans-serif; letter-spacing: -0.01em;
+    text-shadow: 0 4px 0 rgba(60, 10, 90, 0.22); }
+  em { font-style: normal; color: #F1C40F; }
+  .by { font: 700 15px/1.4 'Montserrat', sans-serif; opacity: 0.9; }
+  .by::before { content: "— "; }
+  a:hover .q { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px; }
+  a:hover .by { opacity: 1; }
+  a:focus-visible { outline: 2px solid #F1C40F; outline-offset: 8px; border-radius: 8px; }
+  .dots { display: none; justify-content: center; gap: 10px; margin-top: 28px; }
+  :global(.js) .philo .dots { display: flex; }
+  .dots button { all: unset; cursor: pointer; width: 9px; height: 9px; border-radius: 50%; background: rgba(255, 255, 255, 0.35);
+    transition: background 0.2s, width 0.2s; }
+  .dots button[aria-pressed='true'] { width: 26px; border-radius: 99px; background: #F1C40F; }
+  .dots button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { :global(.js) .philo li, .dots button { transition: none !important; } }
+</style>
