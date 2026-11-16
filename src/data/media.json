@@ -1,0 +1,766 @@
+{
+ "videos": [
+  {
+   "outlet": "Newsy",
+   "title": "App That Sends 'Yo' Greetings Somehow Raises $1M",
+   "date": "2014-06-18",
+   "url": "https://www.youtube.com/watch?v=BgwPJgpePAY",
+   "kind": "press"
+  },
+  {
+   "outlet": "TechCrunch",
+   "title": "Yo",
+   "date": "2014-06-19",
+   "url": "https://www.youtube.com/watch?v=4eYekudMZaw",
+   "kind": "press"
+  },
+  {
+   "outlet": "The Colbert Report",
+   "title": "The Colbert Report - \"Yo\" Smartphone App",
+   "date": "2014-06-20",
+   "url": "https://www.youtube.com/watch?v=b23LSEX6qzY",
+   "kind": "press"
+  },
+  {
+   "outlet": "TechCrunch",
+   "title": "Amazon Fire Phone, Facebook's Slingshot and Yo",
+   "date": "2014-06-20",
+   "url": "https://www.youtube.com/watch?v=PqKm31CQGKc",
+   "kind": "press"
+  },
+  {
+   "outlet": "CNN",
+   "title": "Yo! You've been hacked",
+   "date": "2014-06-23",
+   "url": "https://www.youtube.com/watch?v=-dbAjduUsGs",
+   "kind": "press"
+  },
+  {
+   "outlet": "CNBC",
+   "title": "Yo a 'new way' to get notifications: CEO",
+   "date": "2014-06-24",
+   "url": "https://www.cnbc.com/video/2014/06/24/yo-a-new-way-to-get-notifications-ceo.html",
+   "kind": "press"
+  },
+  {
+   "outlet": "Fox Business",
+   "title": "Yo CEO hires hacker",
+   "date": "2014-06-24",
+   "url": "https://video.foxbusiness.com/v/3640127394001/",
+   "kind": "press"
+  },
+  {
+   "outlet": "The Jewish Week",
+   "title": "Red Alert:Israel and YO App",
+   "date": "2014-07-14",
+   "url": "https://www.youtube.com/watch?v=f1wbQ1xfc-Q",
+   "kind": "press"
+  },
+  {
+   "outlet": "TechCrunch",
+   "title": "Yo | Fly or Die",
+   "date": "2014-07-15",
+   "url": "https://www.youtube.com/watch?v=QfFgpcSviH0",
+   "kind": "press"
+  },
+  {
+   "outlet": "CNBC Africa",
+   "title": "APP of the week:Yo",
+   "date": "2014-07-29",
+   "url": "https://www.youtube.com/watch?v=5bSvLW3RdWQ",
+   "kind": "press"
+  },
+  {
+   "outlet": "AskMen",
+   "title": "The App That Just Sends \"Yo\" Worth $10M And Has 2M Users DD",
+   "date": "2014-08-04",
+   "url": "https://www.youtube.com/watch?v=4ehr5kpfEBE",
+   "kind": "press"
+  },
+  {
+   "outlet": "Major League Hacking (StudentHack)",
+   "title": "StudentHack Talk - Or Arbel CEO of Yo",
+   "date": "2014-11-04",
+   "url": "https://www.youtube.com/watch?v=Xc0A3Kx6878",
+   "kind": "talk"
+  },
+  {
+   "outlet": "Bizcast (Samurai Venture Summit, Japan)",
+   "title": "世の中で一番馬鹿げたアプリが世界をより良くする！Yo CEO Or Arbel氏が創業ストーリーと今後の展開を語る",
+   "date": "2014-11-12",
+   "url": "https://www.youtube.com/watch?v=Im_VWd_eApI",
+   "kind": "talk"
+  },
+  {
+   "outlet": "VentureBeat (MobileBeat 2014)",
+   "title": "MobileBeat 2014: How did a stupidly simple app get such stupidly huge growth?",
+   "date": "2014-12-23",
+   "url": "https://www.youtube.com/watch?v=ZA-Hnd1j_II",
+   "kind": "talk"
+  },
+  {
+   "outlet": "Portugal Startups (Go Youth Conference)",
+   "title": "Talking with Or Arbel (Co-founder and CEO at YO) in Portugal",
+   "date": "2015-04-23",
+   "url": "https://www.youtube.com/watch?v=TDrlBRTqIzE",
+   "kind": "talk"
+  },
+  {
+   "outlet": "Mashable",
+   "title": "Yo: #91 Best iPhone App of All Time ",
+   "date": "2015-12-09",
+   "url": "https://www.youtube.com/watch?v=K4hhFYdcjpM",
+   "kind": "press"
+  },
+  {
+   "outlet": "GaryVee",
+   "title": "Is the Yo App a Good Way to Reach Customers?",
+   "date": "2016-08-02",
+   "url": "https://www.youtube.com/watch?v=vB6ePnDSp7w",
+   "kind": "press"
+  },
+  {
+   "outlet": "Slidebean",
+   "title": "Yo! The dumbest app ever to raise $1M",
+   "date": "2021-10-26",
+   "url": "https://www.youtube.com/watch?v=A5MkiPIdi-o",
+   "kind": "press"
+  }
+ ],
+ "articles": [
+  {
+   "outlet": "New Statesman",
+   "title": "Yo: the one-word viral app that somehow raised $1m and has already got hacked",
+   "date": "2014-06",
+   "url": "https://www.newstatesman.com/science-tech/2014/06/yo-one-word-viral-app-somehow-raised-1m-and-already-got-hacked"
+  },
+  {
+   "outlet": "TechCrunch",
+   "title": "Yo",
+   "date": "2014-06-18",
+   "url": "https://techcrunch.com/2014/06/18/yo-yo/",
+   "author": "Jordan Crook"
+  },
+  {
+   "outlet": "TechCrunch",
+   "title": "Hands On With Yo, The Absurdly Simple Messaging App",
+   "date": "2014-06-18",
+   "url": "https://techcrunch.com/2014/06/18/hands-on-with-yo-the-absurdly-simple-messaging-app/",
+   "author": "Colleen Taylor"
+  },
+  {
+   "outlet": "Business Insider",
+   "title": "The Yo Story: A Chat With The Creator Of The Simplest App In The World",
+   "date": "2014-06-18",
+   "url": "https://www.businessinsider.com/interview-with-yo-app-founder-or-arbel-2014-6",
+   "author": "Steven Tweedie"
+  },
+  {
+   "outlet": "CNN Money",
+   "title": "The million-dollar app that says 'yo'",
+   "date": "2014-06-18",
+   "url": "https://money.cnn.com/2014/06/18/technology/mobile/yo-app/"
+  },
+  {
+   "outlet": "CNBC",
+   "title": "This app says 'yo' (that's all), and has raised $1 million",
+   "date": "2014-06-18",
+   "url": "https://www.cnbc.com/2014/06/18/this-app-says-yo-thats-all-and-has-raised-1-million.html"
+  },
+  {
+   "outlet": "The Washington Post",
+   "title": "In defense of Yo, the million-dollar app that sends 'yo' messages … and does literally nothing else",
+   "date": "2014-06-18",
+   "url": "https://www.washingtonpost.com/news/the-intersect/wp/2014/06/18/in-defense-of-yo-the-million-dollar-app-that-sends-yo-messages-and-does-literally-nothing-else/"
+  },
+  {
+   "outlet": "NBC News",
+   "title": "Yes, This is Real: App That Only Says 'Yo' Raised $1 million",
+   "date": "2014-06-18",
+   "url": "https://www.nbcnews.com/tech/mobile/yes-real-app-only-says-yo-raised-1-million-n134621"
+  },
+  {
+   "outlet": "Salon",
+   "title": "The genius of extreme Internet minimalism: An app that just says \"yo\"",
+   "date": "2014-06-18",
+   "url": "https://www.salon.com/2014/06/18/the_genius_of_extreme_internet_minimalism_an_app_that_just_says_yo/",
+   "author": "Andrew Leonard"
+  },
+  {
+   "outlet": "The Next Web",
+   "title": "This app lets you say 'yo' to your buddies. That's it.",
+   "date": "2014-06-18",
+   "url": "https://thenextweb.com/news/yo-app-lets-say-yo-friends-nothing-else",
+   "author": "Paul Sawers"
+  },
+  {
+   "outlet": "Haaretz",
+   "title": "Story of Yo: The App About Nothing and Everything",
+   "date": "2014-06-19",
+   "url": "https://www.haaretz.com/israel-news/business/the-app-about-nothing-everything-1.5252552"
+  },
+  {
+   "outlet": "CNET",
+   "title": "The million-dollar app that exists to say \"Yo\"",
+   "date": "2014-06-19",
+   "url": "https://www.cnet.com/tech/services-and-software/the-million-dollar-app-that-exists-to-say-yo/",
+   "author": "Michelle Starr"
+  },
+  {
+   "outlet": "CBS News",
+   "title": "\"Yo\" is the ridiculously simple app that everyone is downloading",
+   "date": "2014-06-19",
+   "url": "https://www.cbsnews.com/news/yo-ridiculously-simple-app-that-everyone-is-downloading/",
+   "author": "Leezel Tanglao"
+  },
+  {
+   "outlet": "The Register",
+   "title": "Yes. App that lets you say 'Yo' raises 1 MEEELLION DOLLARS",
+   "date": "2014-06-19",
+   "url": "https://www.theregister.com/2014/06/19/yo_becomes_one_million_dollar_app/",
+   "author": "Jasper Hamill"
+  },
+  {
+   "outlet": "The Globe and Mail",
+   "title": "Yo: Why the latest 'hot' app will destroy your faith in the Internet",
+   "date": "2014-06-19",
+   "url": "https://www.theglobeandmail.com/technology/digital-culture/yo-why-the-latest-hot-app-will-destroy-your-faith-in-the-internet/article19246216/",
+   "author": "Shane Dingman"
+  },
+  {
+   "outlet": "Adweek",
+   "title": "Investors gave $1 million to a messaging app that just sends \"Yo\"",
+   "date": "2014-06-19",
+   "url": "https://www.adweek.com/performance-marketing/investors-gave-1-million-to-a-messaging-app-that-sends-nothing-but-yo/",
+   "author": "Phi Tran"
+  },
+  {
+   "outlet": "Yahoo Tech",
+   "title": "Developers Have Hit a Yo Point with This Terrible New App",
+   "date": "2014-06-19",
+   "url": "https://www.yahoo.com/tech/developers-have-hit-a-yo-point-with-this-terrible-new-89277145724.html",
+   "author": "Alyssa Bereznak"
+  },
+  {
+   "outlet": "TechCrunch",
+   "title": "Yo App Hacked By College Students",
+   "date": "2014-06-20",
+   "url": "https://techcrunch.com/2014/06/20/yo-app-allegedly-hacked-by-college-students/",
+   "author": "Mike Butcher"
+  },
+  {
+   "outlet": "BBC News",
+   "title": "Unlikely hit app Yo is 'hacked' by students",
+   "date": "2014-06-20",
+   "url": "https://www.bbc.com/news/technology-27939799",
+   "author": "Dave Lee"
+  },
+  {
+   "outlet": "CNN Money",
+   "title": "No surprise: Hackers target Yo and get just about everything",
+   "date": "2014-06-20",
+   "url": "https://money.cnn.com/2014/06/20/technology/security/yo-hacked/index.html"
+  },
+  {
+   "outlet": "Time",
+   "title": "App That Lets People Say 'Yo' To One Another Gets Hacked",
+   "date": "2014-06-20",
+   "url": "https://time.com/2904467/yo-app-hack-security/"
+  },
+  {
+   "outlet": "Time",
+   "title": "Yo, We Shouldn't Trust Apps That Become Wildly Popular Out of Nowhere",
+   "date": "2014-06-20",
+   "url": "https://time.com/2904560/yo-hacked/"
+  },
+  {
+   "outlet": "Bloomberg",
+   "title": "Don't Blame Silicon Valley for the Stupid Yo App. Blame Israel",
+   "date": "2014-06-20",
+   "url": "https://www.bloomberg.com/news/2014-06-20/don-t-blame-silicon-valley-for-the-stupid-yo-app-blame-israel.html"
+  },
+  {
+   "outlet": "Slate",
+   "title": "Yo app hacked: Simple smartphone app hacked by Georgia Tech students.",
+   "date": "2014-06-20",
+   "url": "https://slate.com/technology/2014/06/yo-app-hacked-simple-smartphone-app-hacked-by-georgia-tech-students.html",
+   "author": "Will Oremus"
+  },
+  {
+   "outlet": "Fast Company",
+   "title": "Viral App Yo Has Already Been Hacked",
+   "date": "2014-06-20",
+   "url": "https://www.fastcompany.com/3032197/viral-app-yo-has-already-been-hacked"
+  },
+  {
+   "outlet": "Gizmodo",
+   "title": "Yo's Now a Security Threat as Well as Being Stupid",
+   "date": "2014-06-20",
+   "url": "https://gizmodo.com/yos-now-a-security-threat-as-well-as-being-stupid-1593674895",
+   "author": "Jamie Condliffe"
+  },
+  {
+   "outlet": "Re/code",
+   "title": "Code/red: Yo Drama",
+   "date": "2014-06-20",
+   "url": "https://www.vox.com/2014/6/20/11628190/codered-yo-drama",
+   "author": "John Paczkowski"
+  },
+  {
+   "outlet": "NBC News",
+   "title": "Yo! $1 Million App With 'Security Issues' Hits 300K Downloads",
+   "date": "2014-06-20",
+   "url": "https://www.nbcnews.com/tech/security/yo-1-million-app-security-issues-hits-300k-downloads-n136581"
+  },
+  {
+   "outlet": "NPR",
+   "title": "Yo App Raises $1 Million",
+   "date": "2014-06-20",
+   "url": "https://www.npr.org/2014/06/20/323844591/yo-app-raises-1-million"
+  },
+  {
+   "outlet": "Salon",
+   "title": "America's hottest new smartphone app has already been hacked by college kids",
+   "date": "2014-06-20",
+   "url": "https://www.salon.com/2014/06/20/new_communications_app_yo_hacked_by_college_kids/",
+   "author": "Sarah Gray"
+  },
+  {
+   "outlet": "Entrepreneur",
+   "title": "The 'Yo' Explosion Comes Full Circle: Viral App Gets Hacked",
+   "date": "2014-06-20",
+   "url": "https://www.entrepreneur.com/article/235042",
+   "author": "Catherine Clifford"
+  },
+  {
+   "outlet": "MacRumors",
+   "title": "Simplistic 'Yo' Messaging App Soars in App Store Charts, Proves Vulnerable to Hacking",
+   "date": "2014-06-20",
+   "url": "https://www.macrumors.com/2014/06/20/yo-vulnerable-hacking/",
+   "author": "Kelly Hodgkins"
+  },
+  {
+   "outlet": "BGR",
+   "title": "The Stupidest $1 Million App Ever Has Already Been Hacked",
+   "date": "2014-06-20",
+   "url": "https://www.bgr.com/general/yo-app-for-ios-android-hacked/",
+   "author": "Brad Reed"
+  },
+  {
+   "outlet": "Business Insider",
+   "title": "THE INSIDE STORY OF YO: How A 'Stupid' App Attracted Millions Of Dollars And Rocketed To The Top Of The App Store",
+   "date": "2014-06-21",
+   "url": "https://www.businessinsider.com/the-inside-story-of-yo-there-isnt-actually-1-million-in-the-bank-2014-6",
+   "author": "Alyson Shontell"
+  },
+  {
+   "outlet": "TheJournal.ie",
+   "title": "The app that only lets you say 'Yo' is hiring - and the job description is suitably minimalist",
+   "date": "2014-06-22",
+   "url": "https://www.thejournal.ie/yo-app-hiring-1529100-Jun2014/"
+  },
+  {
+   "outlet": "Business Insider",
+   "title": "We Officially Have Our First Wall Street Economist Talking About The 'Yo' App",
+   "date": "2014-06-23",
+   "url": "https://www.businessinsider.com/joachim-fels-on-yo-2014-6",
+   "author": "Joe Weisenthal"
+  },
+  {
+   "outlet": "The Guardian",
+   "title": "Yo founder apologises for hack – and hires one of his hackers",
+   "date": "2014-06-23",
+   "url": "https://www.theguardian.com/technology/2014/jun/23/yo-founder-hack-hires-hackers-chat-app",
+   "author": "Alex Hern"
+  },
+  {
+   "outlet": "Fast Company",
+   "title": "Yo, Hacked on Friday, Just Hired One Of Its Hackers And Topped 1 Million Users",
+   "date": "2014-06-23",
+   "url": "https://www.fastcompany.com/3032257/yo-hacked-on-friday-just-hired-one-of-its-hackers-and-topped-1-million-users"
+  },
+  {
+   "outlet": "Gizmodo",
+   "title": "The Biggest Thing That Yo Got Right Is Hiring Its Hackers",
+   "date": "2014-06-23",
+   "url": "https://gizmodo.com/the-biggest-thing-that-yo-got-right-is-hiring-its-hacke-1594875015",
+   "author": "Kate Knibbs"
+  },
+  {
+   "outlet": "CBS News",
+   "title": "Popular \"Yo\" app hacked by college students, quickly fixed",
+   "date": "2014-06-23",
+   "url": "https://www.cbsnews.com/news/popular-yo-app-hacked-by-college-students-quickly-fixed/"
+  },
+  {
+   "outlet": "International Business Times",
+   "title": "Yo App World Cup Feature Alerts Users When Goals Are Scored",
+   "date": "2014-06-23",
+   "url": "https://www.ibtimes.com/yo-app-world-cup-feature-alerts-users-when-goals-are-scored-1608964",
+   "author": "Thomas Barrabi"
+  },
+  {
+   "outlet": "Yahoo Tech",
+   "title": "Soon, Businesses, Blogs, and the Cheesecake Factory May Be Able to 'Yo' You",
+   "date": "2014-06-23",
+   "url": "https://finance.yahoo.com/news/soon-businesses-and-blogs-may-be-able-to-yo-you-89666065884.html"
+  },
+  {
+   "outlet": "The Week (UK)",
+   "title": "Yo app: what is it and why is it popular?",
+   "date": "2014-06-23",
+   "url": "https://www.theweek.co.uk/technology/59094/yo-app-what-is-it-and-why-is-it-popular"
+  },
+  {
+   "outlet": "TechCrunch",
+   "title": "The House Of Yo",
+   "date": "2014-06-24",
+   "url": "https://techcrunch.com/2014/06/24/the-house-of-yo/",
+   "author": "Sarah Buhr"
+  },
+  {
+   "outlet": "Financial Times",
+   "title": "Yo app passes 1m downloads",
+   "date": "2014-06-24",
+   "url": "https://www.ft.com/content/5fc1915e-fad2-11e3-8959-00144feab7de",
+   "author": "John Aglionby"
+  },
+  {
+   "outlet": "Quartz",
+   "title": "India has a fitting response to Yo, the dumbest app ever",
+   "date": "2014-06-25",
+   "url": "https://qz.com/226357/india-comes-up-with-a-fitting-response-to-yo-aiyo/",
+   "author": "Diksha Madhok"
+  },
+  {
+   "outlet": "The Verge",
+   "title": "Here's why you're going to install the most annoying app in the world",
+   "date": "2014-06-26",
+   "url": "https://www.theverge.com/2014/6/26/5841446/yo-is-going-to-change-the-way-you-use-your-phone",
+   "author": "Ellis Hamburger"
+  },
+  {
+   "outlet": "TechCrunch",
+   "title": "Yo! Hackathon Attempts To Show How Yo Can Grow",
+   "date": "2014-06-28",
+   "url": "https://techcrunch.com/2014/06/28/yo-hackathon-attempts-to-show-how-yo-can-grow/",
+   "author": "Jonathan Shieber"
+  },
+  {
+   "outlet": "Business Insider",
+   "title": "The Rise, Falter, And Future Of Yo",
+   "date": "2014-06-28",
+   "url": "https://www.businessinsider.com/the-rise-falter-and-future-of-yo-2014-6",
+   "author": "Steven Tweedie"
+  },
+  {
+   "outlet": "The Times of Israel",
+   "title": "Red Alert app offers a Yo update on missile attacks",
+   "date": "2014-07",
+   "url": "https://www.timesofisrael.com/red-alert-app-offers-a-yo-update-on-missile-attacks/"
+  },
+  {
+   "outlet": "ABC News",
+   "title": "'Red Alert Israel' Will Send a 'Yo' for Every Predicted Rocket Attack",
+   "date": "2014-07",
+   "url": "https://abcnews.go.com/blogs/technology/2014/07/red-alert-israel-will-send-a-yo-for-every-predicted-rocket-attack"
+  },
+  {
+   "outlet": "IGN",
+   "title": "The Yo, Hodor App Provides a New Outlet for Your Inner Hodor",
+   "date": "2014-07-01",
+   "url": "https://www.ign.com/articles/2014/07/02/the-yo-hodor-app-provides-a-new-outlet-for-your-inner-hodor",
+   "author": "Jared Larson"
+  },
+  {
+   "outlet": "The Guardian",
+   "title": "Yo app expands to Windows Phone and gets more useful with IFTTT channel",
+   "date": "2014-07-02",
+   "url": "https://www.theguardian.com/technology/2014/jul/02/yo-app-windows-phone-iftt",
+   "author": "Stuart Dredge"
+  },
+  {
+   "outlet": "TechCrunch",
+   "title": "Fly Or Die: Yo",
+   "date": "2014-07-08",
+   "url": "https://techcrunch.com/2014/07/08/fly-or-die-yo/",
+   "author": "Jordan Crook"
+  },
+  {
+   "outlet": "PBS NewsHour",
+   "title": "Messaging app Yo alerts Israelis to rocket attacks",
+   "date": "2014-07-08",
+   "url": "https://www.pbs.org/newshour/world/messaging-app-yo-alerts-israelis-rocket-attacks"
+  },
+  {
+   "outlet": "The Verge",
+   "title": "Yo app is being used to monitor missile strikes in Israel",
+   "date": "2014-07-09",
+   "url": "https://www.theverge.com/2014/7/9/5884397/yo-being-used-to-monitor-terrorist-attacks-in-israel",
+   "author": "Jacob Kastrenakes"
+  },
+  {
+   "outlet": "BBC News",
+   "title": "Yo app warns Israeli citizens of missile strikes",
+   "date": "2014-07-10",
+   "url": "https://www.bbc.com/news/technology-28247504"
+  },
+  {
+   "outlet": "IBTimes UK",
+   "title": "Yo! App Used to Alert Israelis to Incoming Rocket Attacks",
+   "date": "2014-07-10",
+   "url": "https://www.ibtimes.co.uk/yo-app-used-alert-israelis-incoming-rocket-attacks-1456166",
+   "author": "Anthony Cuthbertson"
+  },
+  {
+   "outlet": "Business Insider",
+   "title": "An App That Just Says 'Yo' Has Raised $1.5 Million At A $5-10 Million Valuation",
+   "date": "2014-07-18",
+   "url": "https://www.businessinsider.com/yo-raises-15-million-at-a-5-10-million-valuation-2014-7",
+   "author": "Alyson Shontell"
+  },
+  {
+   "outlet": "The Next Web",
+   "title": "'A new mobile expression': Yo confirms seed-stage funding from Betaworks and Pete Cashmore",
+   "date": "2014-07-18",
+   "url": "https://thenextweb.com/news/new-mobile-expression-yo-confirms-seed-stage-funding-pete-cashmore-betaworks",
+   "author": "Paul Sawers"
+  },
+  {
+   "outlet": "TechCrunch",
+   "title": "Yo Is Trying To Get Parody App YOLO & Others Pulled From The App Store",
+   "date": "2014-07-31",
+   "url": "https://techcrunch.com/2014/07/31/yo-is-trying-to-get-parody-app-yolo-pulled-from-the-app-store/",
+   "author": "Sarah Perez"
+  },
+  {
+   "outlet": "The Wall Street Journal",
+   "title": "An App Like Yo Could Turn Out to Be Bigger Than Twitter",
+   "date": "2014-08-10",
+   "url": "https://www.wsj.com/articles/yo-this-app-isnt-so-dumb-1407714995",
+   "author": "Christopher Mims"
+  },
+  {
+   "outlet": "TechCrunch",
+   "title": "Yo, The One-Word Messaging App, Updates So It's Not Quite So Absurdly Simple Anymore",
+   "date": "2014-08-12",
+   "url": "https://techcrunch.com/2014/08/12/yo-grows-up/",
+   "author": "Natasha Lomas"
+  },
+  {
+   "outlet": "Mashable",
+   "title": "Yo App Now Does Much More Than Let You Say 'Yo'",
+   "date": "2014-08-12",
+   "url": "https://mashable.com/archive/yo-app-update",
+   "author": "Seth Fiegerman"
+  },
+  {
+   "outlet": "The Next Web",
+   "title": "Yo now lets you send links, \"Yo\" hashtags and set up IFTTT-style alerts with other services",
+   "date": "2014-08-12",
+   "url": "https://thenextweb.com/news/yo-now-lets-send-links-post-hashtags-set-ifttt-style-alerts-services",
+   "author": "Nick Summers"
+  },
+  {
+   "outlet": "Forbes",
+   "title": "How To Make Your First Million Dollars - Yo, Hailo And Others Explain",
+   "date": "2014-08-13",
+   "url": "https://www.forbes.com/sites/jaymcgregor/2014/08/13/how-to-make-your-first-million-dollars-yo-hailo-and-others-explain/",
+   "author": "Jay McGregor"
+  },
+  {
+   "outlet": "Gizmodo",
+   "title": "Yo Is Dead, Long Live Yo",
+   "date": "2014-08-13",
+   "url": "https://gizmodo.com/yo-is-dead-long-live-yo-1620995457",
+   "author": "Ashley Feinberg"
+  },
+  {
+   "outlet": "Yahoo Tech",
+   "title": "Catching Up with the Creator of Yo: 'It's Our Job to Show That It's Not a Joke'",
+   "date": "2014-08-14",
+   "url": "https://www.yahoo.com/tech/catching-up-with-the-creator-of-yo-its-our-job-to-94740618769.html"
+  },
+  {
+   "outlet": "American Journalism Review",
+   "title": "The Yo App: Ridiculous or Revolutionary?",
+   "date": "2014-08-27",
+   "url": "https://ajr.org/2014/08/27/yo-app-ridiculous-revolutionary/"
+  },
+  {
+   "outlet": "Mashable",
+   "title": "Yo App Users Have Sent More Than 100 Million Yos",
+   "date": "2014-09-05",
+   "url": "https://mashable.com/archive/yo-100-million",
+   "author": "Seth Fiegerman"
+  },
+  {
+   "outlet": "Business Insider",
+   "title": "What's Happened To ~$7 Million App 'Yo' Now That The Hype Has Died",
+   "date": "2014-09-26",
+   "url": "https://www.businessinsider.com/whats-happened-to-7-million-app-yo-now-that-the-hype-has-died-2014-9",
+   "author": "Alyson Shontell"
+  },
+  {
+   "outlet": "VentureBeat",
+   "title": "Simple messaging app Yo adds location sharing for context",
+   "date": "2014-10-07",
+   "url": "https://venturebeat.com/2014/10/07/simple-messaging-app-yo-adds-location-sharing-for-context/"
+  },
+  {
+   "outlet": "Slate",
+   "title": "CEO of Yo discusses the app's explosive growth and plans for the future.",
+   "date": "2014-12-15",
+   "url": "https://slate.com/business/2014/12/ceo-of-yo-discusses-the-app-s-explosive-growth-and-plans-for-the-future.html",
+   "author": "James Cook"
+  },
+  {
+   "outlet": "TechCrunch",
+   "title": "Yo Tries To Make Itself Useful With Photo And Link Alerts From 150 Sources",
+   "date": "2015-02-24",
+   "url": "https://techcrunch.com/2015/02/24/notifications-without-apps/",
+   "author": "Josh Constine"
+  },
+  {
+   "outlet": "Business Insider",
+   "title": "HBO's 'Silicon Valley' really built a 'Bro app' based off the Yo app",
+   "date": "2015-04-20",
+   "url": "https://www.businessinsider.com/silicon-valley-built-bro-app-2015-4",
+   "author": "Jason Guerrasio"
+  },
+  {
+   "outlet": "9to5Mac",
+   "title": "Yo is apparently still a thing, updated w/ support for sharing images & locations",
+   "date": "2015-06-15",
+   "url": "https://9to5mac.com/community/yo-update-pictures/",
+   "author": "Chance Miller"
+  },
+  {
+   "outlet": "Yahoo Tech",
+   "title": "When 'Yo' Is Not Enough: Yo Status Lets Everyone Know How You're Feeling with an Emoji",
+   "date": "2016-02-16",
+   "url": "https://www.yahoo.com/tech/when-yo-is-not-enough-1365856876920886.html"
+  },
+  {
+   "outlet": "Mashable",
+   "title": "Please, somebody save the Yo app before it dies",
+   "date": "2018-02-01",
+   "url": "https://mashable.com/article/yo-app-patreon-shut-down-crowdfunding-or-arbel",
+   "author": "Kerry Flynn"
+  },
+  {
+   "outlet": "Nieman Lab",
+   "title": "Yo! How a content-free social network briefly fascinated the world (and the news media)",
+   "date": "2024-04-01",
+   "url": "https://www.niemanlab.org/2024/04/yo-how-a-content-free-social-network-briefly-fascinated-the-world-and-the-news-media/",
+   "author": "Joshua Benton"
+  }
+ ],
+ "channel": {
+  "name": "Yo App",
+  "url": "https://www.youtube.com/channel/UCsLRAVQjHilPRXtpJvO88vA",
+  "videos": [
+   {
+    "title": "Yo - Daddy Delivery",
+    "date": "2014-06-29",
+    "url": "https://www.youtube.com/watch?v=7YR4UjwH9-Y"
+   },
+   {
+    "title": "Yo Safety First",
+    "date": "2014-06-29",
+    "url": "https://www.youtube.com/watch?v=Wae8udNsGBc"
+   },
+   {
+    "title": "Yo - Best Bros",
+    "date": "2014-06-29",
+    "url": "https://www.youtube.com/watch?v=tbHvSo-Kip4"
+   },
+   {
+    "title": "Yo - Yodle",
+    "date": "2014-07-01",
+    "url": "https://www.youtube.com/watch?v=WRjGGBZ6JDg"
+   },
+   {
+    "title": "Yo - Space",
+    "date": "2014-07-01",
+    "url": "https://www.youtube.com/watch?v=3wp0giwdGck"
+   },
+   {
+    "title": "Yo - Interview",
+    "date": "2014-07-02",
+    "url": "https://www.youtube.com/watch?v=LFPXmLTO7nk"
+   },
+   {
+    "title": "Yo - Crazy Aunt",
+    "date": "2014-08-19",
+    "url": "https://www.youtube.com/watch?v=Ve50Kh1gQvA"
+   },
+   {
+    "title": "Yo - Booty Call",
+    "date": "2014-08-19",
+    "url": "https://www.youtube.com/watch?v=fFa1CD0YMSE"
+   },
+   {
+    "title": "Yo - Bad Date",
+    "date": "2014-08-19",
+    "url": "https://www.youtube.com/watch?v=fB1e5Szjpw4"
+   }
+  ]
+ },
+ "blog": {
+  "name": "@YoAppStatus on Medium",
+  "url": "https://medium.com/@YoAppStatus",
+  "posts": [
+   {
+    "date": "2015-06-17",
+    "title": "9 Ways to Yo The Things You Can’t Say",
+    "url": "https://medium.com/@YoAppStatus/9-ways-to-yo-the-things-you-can-t-say-917cd54a3b0b"
+   },
+   {
+    "date": "2015-06-18",
+    "title": "A Week in the Life of a Sorority Girl as Told by Yo’s",
+    "url": "https://medium.com/@YoAppStatus/a-week-in-the-life-of-a-sorority-girl-as-told-by-yo-s-f9340b10562e"
+   },
+   {
+    "date": "2015-06-19",
+    "title": "The 10 Stages of Your Office Romance",
+    "url": "https://medium.com/@YoAppStatus/the-10-stages-of-your-office-romance-443f59d31a4f"
+   },
+   {
+    "date": "2015-06-22",
+    "title": "10 Times You Realized You Were The Worst Person to Work With",
+    "url": "https://medium.com/@YoAppStatus/10-times-you-realized-you-were-the-worst-person-to-work-with-10bc10aaeba1"
+   },
+   {
+    "date": "2015-06-24",
+    "title": "12 Yo Groups that could have been featured in The Office",
+    "url": "https://medium.com/@YoAppStatus/10-yo-groups-that-could-have-been-featured-in-the-office-516db28c4f16"
+   },
+   {
+    "date": "2015-06-29",
+    "title": "Your Night Out as Told by Yo’s",
+    "url": "https://medium.com/@YoAppStatus/your-night-as-told-by-yo-s-d82c906ece63"
+   },
+   {
+    "date": "2016-02-16",
+    "title": "Introducing Yo Status",
+    "url": "https://medium.com/yo-simple-communication/introducing-yo-status-199bcef2ca14"
+   },
+   {
+    "date": "2016-03-07",
+    "title": "Yo Polls — Real-time frictionless polls",
+    "url": "https://medium.com/hackernoon/yo-polls-real-time-frictionless-polls-e790cdb60371"
+   },
+   {
+    "date": "2017-03-30",
+    "title": "Introducing Yo Stories",
+    "url": "https://medium.com/@YoAppStatus/introducing-yo-stories-515a04342be3"
+   },
+   {
+    "date": "2018-01-30",
+    "title": "Love Yo? Want to help to keep it running?",
+    "url": "https://medium.com/@YoAppStatus/love-yo-want-to-help-to-keep-it-running-14a07f42bd0f"
+   }
+  ]
+ }
+}

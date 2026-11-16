@@ -1,0 +1,382 @@
+---
+// Story: the Wall Street Journal's line up top (the title only for screen readers), Colbert under them, then The story:
+// Or's timeline beside the app of 2014 and 2015 (rebuilt and playable, public/p/app.html, in an iPhone 6), then Yo on
+// TV, on stage and in its own ads, and the press as a list by month (data: src/data/media.json, research: yo-lore/press.md).
+import Footer from '../../components/Footer.astro';
+import Head from '../../components/Head.astro';
+import Header from '../../components/Header.astro';
+import Wordmark from '../../components/Wordmark.astro';
+import media from '../../data/media.json';
+import { outlets, markFor } from '../../lib/outlets';
+import IPhone6 from '../../mockups/iphone-6/IPhone6.astro';
+
+const fmt = (d: string) =>
+  new Date(d.length === 7 ? `${d}-01` : d).toLocaleDateString('en-US', {
+    year: 'numeric', month: 'short', ...(d.length > 7 ? { day: 'numeric' } : {}), timeZone: 'UTC',
+  });
+
+// On TV only the big names (the rest of media.json stays as research); on stage every talk Or gave.
+const big = ['The Colbert Report', 'TechCrunch', 'CNN', 'CNBC', 'Fox Business', 'Mashable'];
+const press = media.videos.filter((v) => v.kind === 'press' && big.includes(v.outlet ?? ''));
+// Everything that fits none of TV, On stage and Yo's ads: the smaller outlets and channels, under Other.
+const other = media.videos.filter((v) => !press.includes(v) && v.kind !== 'talk');
+const talks = media.videos.filter((v) => v.kind === 'talk'); // Or's own talks, all of them
+
+// One player, three lists beside it. Only YouTube plays in place; the rest opens at the outlet.
+const yt = (url: string) => url.match(/[?&]v=([\w-]{11})/)?.[1];
+type Clip = { outlet: string; title: string; date: string; url: string; id?: string };
+const clip = (v: { outlet?: string; title: string; date: string; url: string }, outlet = v.outlet ?? ''): Clip =>
+  ({ outlet, title: v.title.replace(/^The Colbert Report - /, '').replace(/^Yo\s*-\s*/, ''), date: v.date, url: v.url, id: yt(v.url) });
+const tabs = [
+  { key: 'tv', label: 'TV', items: press.map((v) => clip(v)) },
+  { key: 'stage', label: 'On stage', items: talks.map((v) => clip(v)).filter((c) => c.id) },
+  { key: 'ads', label: 'Yo’s ads', items: media.channel.videos.map((v) => clip(v, 'Yo')) },
+  { key: 'other', label: 'Other', items: other.map((v) => clip(v)) },
+];
+// Colbert opens the page (the one everyone remembers); the TV tab starts with the next.
+const colbert = tabs[0].items.find((c) => c.id === 'b23LSEX6qzY')!;
+tabs[0].items = tabs[0].items.filter((c) => c !== colbert);
+
+// The Wall Street Journal opens the page; the press is a list by month, each line the outlet's plate and the headline.
+const feature = outlets.find((m) => m.name === 'The Wall Street Journal')!;
+// Left out: the stories Or would rather not see on his own site (the hack of June 2014, "stupid", "dead" and the like).
+const sour = /hack|stupid|dumbest|terrible|destroy|trust|blame|meeellion|annoying|is dead|dies|died|falter|drama|security|somehow|still a thing/i;
+// The hack stays in where the story is how Or handled it (he hired one of the hackers).
+const kind = media.articles.filter((a) => !sour.test(a.title) || /hires|hiring/i.test(a.title));
+const monthOf = (d: string) =>
+  new Date(`${d.slice(0, 7)}-01`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', timeZone: 'UTC' });
+const months: { month: string; items: typeof kind }[] = [];
+for (const a of kind) {
+  const m = monthOf(a.date);
+  if (months.at(-1)?.month !== m) months.push({ month: m, items: [] });
+  months.at(-1)!.items.push(a);
+}
+
+// The story, from yo-lore/history.md.
+const story = [
+  { y: '2014', d: 'Apr 1', t: 'Built in eight hours, out on April Fools’ Day.', src: ['Wikipedia', 'https://en.wikipedia.org/wiki/Yo_(app)'] },
+  { y: '2014', d: 'Jun', t: 'No. 1 in Social Networking, 1M users.', src: ['FT', 'https://www.ft.com/content/5fc1915e-fad2-11e3-8959-00144feab7de'] },
+  { y: '2014', d: 'Jun', t: 'Hacked, fixed, and the hacker hired.', src: ['The Guardian', 'https://www.theguardian.com/technology/2014/jun/23/yo-founder-hack-hires-hackers-chat-app'] },
+  { y: '2014', d: 'Jul', t: '$1.5 million from Betaworks and others.', src: ['TNW', 'https://thenextweb.com/news/new-mobile-expression-yo-confirms-seed-stage-funding-pete-cashmore-betaworks'] },
+  { y: '2014', d: 'Jul', t: 'Windows Phone, IFTTT, an open API.', src: ['The Guardian', 'https://www.theguardian.com/technology/2014/jul/02/yo-app-windows-phone-iftt'] },
+  { y: '2014', d: 'Sep', t: '100 million Yos.', src: ['Mashable', 'https://mashable.com/archive/yo-100-million'] },
+  { y: '2015', d: 'Feb', t: 'Yo Store: 150 services, NBA to BuzzFeed.', src: ['TechCrunch', 'https://techcrunch.com/2015/02/24/notifications-without-apps/'] },
+  { y: '2015', d: 'Apr', t: 'TV series Silicon Valley builds Bro.', src: ['Business Insider', 'https://www.businessinsider.com/silicon-valley-built-bro-app-2015-4'] },
+  { y: '2015', d: 'Jun', t: 'Yo 2.0: groups and photos.', src: ['Yo’s blog', 'https://web.archive.org/web/20150615235009/http://blog.justyo.co/yo-2-0/'] },
+  { y: '2021', d: 'Dec', t: 'The original code, open source.', src: ['GitHub', 'https://github.com/YoApp'] },
+  { y: '2026', d: 'Nov', t: 'Yo is back, end-to-end encrypted.', href: '/p/changelog' },
+];
+const description =
+  "The story of Yo since 2014: the original app of 2014 and 2015, rebuilt to play with, Yo on TV and on stage, and Yo in the press, from The Wall Street Journal to TechCrunch.";
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <Head title="Yo – Story" description={description} path="/p/story" />
+    <style>
+      html, body { margin: 0; background: #9B59B6; color: #fff; }
+      body { font: 16px/1.5 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
+      main { max-width: 1000px; margin: 0 auto; padding: 96px 20px 24px; min-height: 100vh; min-height: 100svh; box-sizing: border-box; display: flex; flex-direction: column; }
+      a { color: #fff; }
+      h1 { margin: 0; font: 900 clamp(3.4rem, 12vw, 6rem)/0.95 'Montserrat', sans-serif; letter-spacing: -0.02em; text-shadow: 0 6px 0 rgba(60, 10, 90, 0.22); }
+      h2 { margin: 112px 0 24px; font: 900 clamp(2rem, 6.5vw, 3.2rem)/1.05 'Montserrat', sans-serif; letter-spacing: -0.01em;
+        text-shadow: 0 4px 0 rgba(60, 10, 90, 0.2); scroll-margin-top: 24px; }
+      .date { font: 600 12.5px/1.3 'Montserrat', sans-serif; opacity: 0.7; white-space: nowrap; }
+      .plate { display: inline-flex; padding: 8px 11px; border-radius: 10px; background: #fff; box-shadow: 0 6px 14px -8px rgba(40, 5, 70, 0.6);
+        min-width: 0; overflow: hidden; }
+
+      /* the top: the title and the Wall Street Journal's line as the headline, Colbert under them */
+      .hero { display: flex; flex-direction: column; align-items: center; gap: 44px; text-align: center; padding-top: 24px; }
+      .words { max-width: 46rem; }
+      .hero .tv { width: 100%; max-width: 720px; }
+      .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+      .quote { margin: 0; }
+      .quote p { margin: 0; text-wrap: balance; text-shadow: 0 3px 0 rgba(60, 10, 90, 0.18); font: 700 clamp(1.9rem, 4.6vw, 3.1rem)/1.18 Georgia, 'Times New Roman', serif; }
+      .quote footer { margin-top: 16px; letter-spacing: 0.02em; font: 700 14px/1.3 'Montserrat', sans-serif; }
+      .quote a { color: #F1C40F; text-decoration: none; }
+      .quote a:hover { text-decoration: underline; text-underline-offset: 3px; }
+      .pitch { margin: 0 0 28px; font: 600 clamp(1.1rem, 2.6vw, 1.35rem)/1.4 'Montserrat', sans-serif; max-width: 36rem; }
+      .pitch strong { color: #F1C40F; }
+      .tv { display: flex; flex-direction: column; gap: 10px; }
+      /* Colbert as a poster with a play button; YouTube's player takes its place only on a click */
+      .tv .poster { all: unset; box-sizing: border-box; cursor: pointer; }
+      .tv .poster:focus-visible { outline: 2px solid #F1C40F; outline-offset: 2px; }
+      .tv .poster img { display: block; width: 100%; height: 100%; object-fit: cover; }
+      .tv .poster:hover .play { transform: scale(1.1); }
+      .tv iframe, .tv .poster { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 26px;
+        overflow: hidden; border: 0; background: #1b1022; box-shadow: 0 24px 48px -24px rgba(40, 5, 70, 0.9); }
+      .cap { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 0 6px; font-size: 15px; }
+
+      /* the story: the timeline beside the iPhone 6 with the app of 2014 */
+      .tl { display: grid; grid-template-columns: 1fr; gap: 40px; align-items: center; margin-top: 96px; } /* the phone centred on the whole section */
+      .tl h2 { margin-top: 0; }
+      figure.phone { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+      .years { display: flex; padding: 3px; border-radius: 999px; background: rgba(50, 10, 80, 0.22);
+        box-shadow: inset 0 2px 5px rgba(40, 5, 70, 0.25); }
+      .years button { all: unset; cursor: pointer; padding: 7px 20px; border-radius: 999px; font: 700 14px/1 'Montserrat', sans-serif; opacity: 0.75; }
+      .years button[aria-pressed='true'] { opacity: 1; color: #8E44AD; background: linear-gradient(180deg, #FFE36E, #F1C40F);
+        box-shadow: 0 4px 10px -4px rgba(40, 5, 70, 0.6); }
+      .years button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+      /* above the phone: the 2014/2015 switch centred on it, the ? just beside it */
+      .controls { order: -1; position: relative; align-self: stretch; display: flex; justify-content: center; align-items: center; }
+      .info { position: absolute; left: calc(50% + 80px); top: 50%; translate: 0 -50%; }
+      .info > summary {
+        list-style: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+        font: 700 15px/1 'Montserrat', sans-serif; background: rgba(50, 10, 80, 0.22); box-shadow: inset 0 2px 5px rgba(40, 5, 70, 0.25);
+      }
+      .info > summary::-webkit-details-marker { display: none; }
+      .info[open] > summary, .info > summary:hover { background: rgba(255, 255, 255, 0.2); }
+      .info > summary:focus-visible { outline: 2px solid #F1C40F; outline-offset: 2px; }
+      .tip {
+        position: absolute; z-index: 2; top: calc(100% + 10px); right: -8px; width: 230px; padding: 12px 14px; border-radius: 16px;
+        font-size: 13.5px; line-height: 1.45; text-align: left; color: #fff; background: #6C2E8A;
+        box-shadow: 0 16px 32px -12px rgba(40, 5, 70, 0.8);
+      }
+      .tip a { display: inline-block; margin-top: 4px; font-weight: 600; }
+      .story { list-style: none; margin: 0; padding: 0 0 0 76px; position: relative; }
+      .story::before { content: ""; position: absolute; left: 28px; top: 10px; bottom: 30px; width: 2px; background: rgba(255, 255, 255, 0.25); }
+      .story li { position: relative; min-height: 58px; margin: 0 0 10px; display: flex; flex-direction: column; justify-content: center; }
+      .story .bubble {
+        position: absolute; left: -76px; top: 50%; translate: 0 -50%; width: 58px; height: 58px; border-radius: 50%;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+        color: #8E44AD; background: #fff; box-shadow: 0 6px 14px -6px rgba(40, 5, 70, 0.7);
+        font: 700 10px/1.1 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 0.03em;
+      }
+      .story .bubble b { font-size: 14px; font-weight: 900; letter-spacing: 0; }
+      .story li.now .bubble { background: linear-gradient(180deg, #FFE36E, #F1C40F); }
+      .story h3 { margin: 0; font: 700 1.05rem/1.35 'Montserrat', sans-serif; } /* one line per step, the source after it */
+      .story h3 a { text-decoration-color: #F1C40F; text-underline-offset: 4px; }
+      .src { color: #F1C40F; text-decoration: none; font-weight: 600; font-size: 13px; white-space: nowrap; margin-left: 4px; }
+      .src:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+
+      /* the clips: tabs, then the tiles; a tile's video opens large under them */
+      .player { display: grid; grid-template-columns: 1fr; gap: 20px; }
+      .screen {
+        position: relative; aspect-ratio: 16 / 9; border-radius: 22px; overflow: hidden; background: #1b1022;
+        box-shadow: 0 24px 48px -24px rgba(40, 5, 70, 0.9);
+      }
+      .screen[hidden] { display: none; }
+      .thumb { all: unset; cursor: pointer; position: relative; display: block; border-radius: 12px; }
+      .thumb:focus-visible { outline: 2px solid #F1C40F; outline-offset: 2px; }
+      .play { position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%;
+        background: linear-gradient(180deg, #FFE36E, #F1C40F); box-shadow: 0 8px 16px -6px rgba(30, 0, 50, 0.7); transition: transform 0.15s; }
+      .play::after { content: ""; position: absolute; left: 17px; top: 13px; border: 9px solid transparent; border-left: 14px solid #8E44AD; border-right: 0; }
+      .thumb:hover .play { transform: scale(1.1); }
+      .screen :global(iframe) { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+      .side { display: flex; flex-direction: column; min-height: 0; }
+      .tabs { display: flex; gap: 4px; padding: 3px; border-radius: 999px; background: rgba(50, 10, 80, 0.22); align-self: flex-start;
+        box-shadow: inset 0 2px 5px rgba(40, 5, 70, 0.25); margin-bottom: 10px; }
+      .tabs button { all: unset; cursor: pointer; padding: 7px 16px; border-radius: 999px; font: 700 13.5px/1 'Montserrat', sans-serif; opacity: 0.8; }
+      .tabs button[aria-selected='true'] { opacity: 1; color: #8E44AD; background: linear-gradient(180deg, #FFE36E, #F1C40F); }
+      .tabs button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+      /* the clips under the screen, as tiles: picture on top, outlet and title under it, nothing to scroll */
+      .list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      /* With JavaScript only the chosen tab's list shows; without it every list does, one under the other. */
+      :global(.js) .panel:not(.shown) { display: none; }
+      .item {
+        all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; width: 100%; height: 100%;
+        padding: 8px 8px 12px; border-radius: 18px; color: #fff; text-decoration: none;
+      }
+      .item img, .item .ext { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px; background: #6C2E8A; }
+      .item:hover { background: rgba(255, 255, 255, 0.1); }
+      .item.on { background: rgba(255, 255, 255, 0.18); }
+      .item.on img { box-shadow: 0 0 0 2px #F1C40F; }
+      .item:focus-visible { outline: 2px solid #F1C40F; outline-offset: -2px; }
+      .txt { min-width: 0; padding: 0 4px; }
+      .ext { display: grid; place-items: center; background: #1b1022 !important; font: 900 18px/1 'Montserrat', sans-serif; }
+      .io { display: block; font: 700 10.5px/1.4 'Montserrat', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
+      .it { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 14px; line-height: 1.3; }
+
+      /* the press: a list by month, each line the outlet's white plate and the headline */
+      .press h3 { position: relative; margin: 44px 0 14px; font: 900 clamp(1.5rem, 4vw, 2rem)/1 'Montserrat', sans-serif;
+        text-shadow: 0 4px 0 rgba(60, 10, 90, 0.2); }
+      .press section:first-child h3 { margin-top: 0; }
+      .press ul { list-style: none; margin: 0; padding: 0; }
+      .press li { position: relative; }
+      .press a { display: flex; gap: 16px; align-items: center; padding: 9px 14px; margin: 0 -14px; border-radius: 16px; text-decoration: none;
+        transition: background 0.15s; }
+      .press a:hover { background: rgba(255, 255, 255, 0.12); }
+      .press a:focus-visible { outline: 2px solid #F1C40F; outline-offset: 2px; }
+      .press .plate { flex: none; width: 170px; box-sizing: border-box; justify-content: center; padding: 6px 10px; border-radius: 8px; }
+      .at { min-width: 0; font: 700 1.05rem/1.35 'Montserrat', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* one line each */
+      @media (max-width: 600px) { .press a { flex-direction: column; align-items: flex-start; gap: 8px; } .press .plate { width: auto; } .at { white-space: normal; } }
+      @media (min-width: 860px) {
+        .list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .tl { grid-template-columns: minmax(0, 1fr) auto; gap: clamp(48px, 8vw, 112px); }
+      }
+      @media (prefers-reduced-motion: reduce) { .press a { transition: none; } }
+    </style>
+  </head>
+  <body>
+    <Header current="/p/story" />
+    <main>
+      <div class="hero">
+        <div class="words">
+          <h1 class="vh">Story</h1>
+          <blockquote class="quote">
+            <p>“{feature.title}”</p>
+            <footer><a href={feature.url} rel="noopener" target="_blank">The Wall Street Journal, {fmt(feature.date)} ↗</a></footer>
+          </blockquote>
+        </div>
+        <div class="tv">
+          <button type="button" class="poster" data-id={colbert.id} data-title="The Colbert Report: Yo" aria-label="Play: The Colbert Report, Yo">
+            <img src={`/img/videos/${colbert.id}.webp`} alt="" width="720" height="405" />
+            <span class="play" aria-hidden="true"></span>
+          </button>
+          <span class="cap"><b>The Colbert Report</b><span class="date">{fmt(colbert.date)}</span></span>
+        </div>
+      </div>
+
+      <section class="tl" aria-labelledby="story-title">
+        <div class="tl-side">
+          <h2 id="story-title">The story</h2>
+          <p class="pitch"><strong>Or Arbel</strong> built Yo in 2014. Yo called itself “the simplest and most efficient communication tool in the world.” It still is: <b>Just Yo.</b></p>
+          <ol class="story">
+            {story.map((e, i) => (
+              <li class={i === story.length - 1 ? 'now' : ''}>
+                {/* the year where it changes, else the month; the whole date on hover */}
+                <span class="bubble" title={e.d ? `${e.d}${/\d/.test(e.d) ? ',' : ''} ${e.y}` : e.y} aria-hidden="true"><b>{i > 0 && story[i - 1].y === e.y && e.d ? e.d.split(' ')[0] : e.y}</b></span>
+                <h3>{e.href ? <a href={e.href}>{e.t}</a> : e.t}{e.src && <> <a class="src" href={e.src[1]} rel="noopener" target="_blank">{e.src[0]} ↗</a></>}</h3>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <figure class="phone">
+          <IPhone6 id="app" src="/p/app?embed#classic" title="The Yo app of 2014 and 2015, rebuilt" label="An iPhone 6 showing the Yo app" />
+          <figcaption class="controls">
+            <span class="years" role="group" aria-label="Which Yo">
+              <button type="button" data-v="classic" aria-pressed="true">2014</button>
+              <button type="button" data-v="main" aria-pressed="false">2015</button>
+            </span>
+            <details class="info">
+              <summary aria-label="About this app">?</summary>
+              <span class="tip">The original Yo, rebuilt from its published code. Tap a name.
+                <a href="/p/app#classic">Open full screen</a></span>
+            </details>
+          </figcaption>
+        </figure>
+      </section>
+
+      <h2>On screen</h2>
+      <div class="player">
+        <div class="side">
+          <div class="tabs" role="tablist" aria-label="On screen">
+            {tabs.map((t, i) => (
+              <button type="button" role="tab" id={`tab-${t.key}`} aria-controls={`list-${t.key}`} data-tab={t.key}
+                aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>{t.label}</button>
+            ))}
+          </div>
+          {/* Every list is in the page; without JavaScript all of them show, with it only the chosen tab's (html.js). */}
+          {tabs.map((t, i) => (
+            <div class:list={['panel', { shown: i === 0 }]} id={`list-${t.key}`} role="tabpanel" aria-labelledby={`tab-${t.key}`} data-list={t.key}>
+            <ol class="list">
+              {t.items.map((c) => (
+                <li>
+                  {c.id ? (
+                    <div class="item">
+                      <button type="button" class="thumb" data-id={c.id} data-title={c.title} aria-label={`Play: ${c.outlet}, ${c.title}`}>
+                        <img src={`/img/videos/${c.id}.webp`} alt="" width="320" height="180" loading="lazy" />
+                        <span class="play" aria-hidden="true"></span>
+                      </button>
+                      <span class="txt"><span class="io">{c.outlet}</span><span class="it">{c.title}</span></span>
+                    </div>
+                  ) : (
+                    <a class="item" href={c.url} rel="noopener" target="_blank">
+                      <span class="ext" aria-hidden="true">{c.outlet}</span>
+                      <span class="txt"><span class="io">{c.outlet} ↗</span><span class="it">{c.title}</span></span>
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ol>
+            </div>
+          ))}
+        </div>
+        <div class="screen" id="screen" hidden></div>
+      </div>
+
+      <h2 id="press">In the press</h2>
+      <div class="press">
+        {months.map((g) => (
+          <section>
+            <h3>{g.month}</h3>
+            <ul>
+              {g.items.map((a) => (
+                <li>
+                  <a href={a.url} rel="noopener" target="_blank">
+                    <span class="plate"><Wordmark name={a.outlet === 'International Business Times' ? 'IBTimes' : a.outlet} mark={markFor(a.outlet)} size={13} dark /></span>
+                    <span class="at" title={a.title}>{a.title}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+
+      <Footer />
+    </main>
+    <script>
+      // 2014 / 2015 beside the phone switch the app inside it (same origin: its hash is its route).
+      const app = document.getElementById('app') as HTMLIFrameElement;
+      const buttons = [...document.querySelectorAll<HTMLButtonElement>('.years button')];
+      const mark = () => {
+        const classic = (app.contentWindow?.location.hash ?? '#classic').replace('#', '').startsWith('classic');
+        buttons.forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.v === 'classic') === classic)));
+      };
+      buttons.forEach((b) => b.addEventListener('click', () => { if (app.contentWindow) app.contentWindow.location.hash = b.dataset.v!; }));
+      app.addEventListener('load', () => { app.contentWindow?.addEventListener('hashchange', mark); mark(); });
+
+      // Colbert at the top: a click puts YouTube's player (youtube-nocookie) in place of the poster, playing; nothing
+      // is loaded from YouTube before that.
+      document.querySelector<HTMLButtonElement>('.tv .poster')?.addEventListener('click', (e) => {
+        const b = e.currentTarget as HTMLButtonElement;
+        const f = document.createElement('iframe');
+        f.src = `https://www.youtube-nocookie.com/embed/${b.dataset.id}?rel=0&autoplay=1`;
+        f.title = b.dataset.title!;
+        f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+        f.allowFullscreen = true;
+        b.replaceWith(f);
+        f.focus();
+      });
+
+      // The clips: a tile opens its video large under the grid and the page scrolls to it (YouTube loads only then).
+      const screen = document.getElementById('screen')!;
+      document.querySelectorAll<HTMLButtonElement>('.thumb[data-id]').forEach((b) => b.addEventListener('click', () => {
+        document.querySelectorAll('.item.on').forEach((x) => x.classList.remove('on'));
+        b.closest('.item')!.classList.add('on');
+        const f = document.createElement('iframe');
+        f.src = `https://www.youtube-nocookie.com/embed/${b.dataset.id}?rel=0&autoplay=1`;
+        f.title = b.dataset.title!;
+        f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+        f.allowFullscreen = true;
+        screen.replaceChildren(f);
+        screen.hidden = false;
+        screen.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+      }));
+      // The tabs over the clips: a click shows the tab's list; only the chosen tab is in the Tab order, and the arrow
+      // keys, Home and End move to the previous, next, first or last tab and show it.
+      const tabButtons = [...document.querySelectorAll<HTMLButtonElement>('.tabs button')];
+      const choose = (t: HTMLButtonElement) => {
+        tabButtons.forEach((x) => {
+          x.setAttribute('aria-selected', String(x === t));
+          x.tabIndex = x === t ? 0 : -1;
+        });
+        document.querySelectorAll<HTMLElement>('.panel').forEach((l) => l.classList.toggle('shown', l.dataset.list === t.dataset.tab));
+      };
+      tabButtons.forEach((t, i) => {
+        t.addEventListener('click', () => choose(t));
+        t.addEventListener('keydown', (e) => {
+          const n = tabButtons.length;
+          const to = ({ ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: n - 1 } as Record<string, number>)[e.key];
+          if (to === undefined) return;
+          e.preventDefault();
+          const next = tabButtons[(to + n) % n];
+          choose(next);
+          next.focus();
+        });
+      });
+    </script>
+  </body>
+</html>

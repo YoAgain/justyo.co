@@ -2,20 +2,12 @@
 // Every path the site has no page for lands here (GitHub Pages serves 404.html). justyo.co/NAME is a Yo invite:
 // with Yo installed iOS opens the app for it (apple-app-site-association); without, this page says who invites and
 // how to get Yo. The name is read in the browser only; nothing is sent anywhere.
+import Head from '../components/Head.astro';
 ---
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#9B59B6" />
-    <meta name="robots" content="noindex" />
-    <title>Yo</title>
-    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet" />
+    <Head title="Yo" noindex weights="700" />
     <style>
       html, body { margin: 0; height: 100%; background: #9B59B6; color: #fff; font-family: 'Montserrat', sans-serif; }
       main {
@@ -50,7 +42,8 @@
       // A username (spec 3.3): 3 to 16 characters of letters, digits, _ and emoji, in one path part.
       let part = '';
       try { part = decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, '')); } catch {}
-      const count = [...new Intl.Segmenter().segment(part)].length;
+      // Characters are counted as graphemes where the browser has Intl.Segmenter, else as code points.
+      const count = 'Segmenter' in Intl ? [...new Intl.Segmenter().segment(part)].length : Array.from(part).length;
       if (count >= 3 && count <= 16 && /^[\p{L}\p{M}\p{N}_\p{Extended_Pictographic}\p{Emoji_Component}\u200d]+$/u.test(part)) {
         document.getElementById('name').textContent = part;
         document.getElementById('name2').textContent = part;

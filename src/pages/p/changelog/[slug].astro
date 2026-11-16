@@ -1,0 +1,70 @@
+---
+// One changelog entry as its own page (a blog post): /p/changelog/<slug>, with its own title, description, share image
+// and BlogPosting data for search engines.
+import { render } from 'astro:content';
+import Footer from '../../../components/Footer.astro';
+import Head from '../../../components/Head.astro';
+import Header from '../../../components/Header.astro';
+import { entries, excerpt, iso, long, type Entry } from '../../../lib/changelog';
+
+export async function getStaticPaths() {
+  return (await entries()).map((entry) => ({ params: { slug: entry.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props as { entry: Entry };
+const { Content } = await render(entry);
+const { title, date, image, alt } = entry.data;
+const path = `/p/changelog/${entry.slug}`;
+const url = `https://justyo.co${path}`;
+const description = excerpt(entry.body) || `${title} – what's new in Yo.`;
+const shareImage = new URL(image ?? '/og-image.png', 'https://justyo.co').href;
+const ld = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  datePublished: iso(date),
+  description,
+  image: shareImage,
+  url,
+  mainEntityOfPage: url,
+  publisher: { '@type': 'Organization', name: 'Yo', url: 'https://justyo.co/' },
+});
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <Head title={`${title} – Yo`} description={description} path={path} image={image} imageAlt={image ? alt : undefined} type="article" />
+    <meta property="article:published_time" content={iso(date)} />
+    <script type="application/ld+json" set:html={ld} />
+    <style>
+      html, body { margin: 0; background: #9B59B6; color: #fff; }
+      body { font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+      main { max-width: 680px; margin: 0 auto; padding: 84px 16px 24px; min-height: 100vh; min-height: 100svh; box-sizing: border-box; display: flex; flex-direction: column; }
+      .back { color: #fff; opacity: 0.75; text-decoration: none; font-size: 14px; }
+      .back:hover { opacity: 1; }
+      time { display: block; margin-top: 18px; font-size: 14px; opacity: 0.75; }
+      h1 { margin: 4px 0 18px; font: 900 clamp(2rem, 7vw, 3rem)/1.08 'Montserrat', sans-serif; }
+      .hero {
+        display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; margin: 0 0 20px;
+        border-radius: 22px; box-shadow: 0 18px 36px -18px rgba(55, 12, 85, 0.7);
+      }
+      .body :global(p) { margin: 0 0 1em; }
+      .body :global(a) { color: #fff; }
+      .body :global(img) { max-width: 100%; height: auto; border-radius: 16px; }
+      .body :global(h2) { font: 700 1.35rem/1.25 'Montserrat', sans-serif; margin: 1.6em 0 0.5em; }
+    </style>
+  </head>
+  <body>
+    <Header current="/p/changelog" />
+    <main>
+      <article>
+        <a class="back" href="/p/changelog">‹ What's new</a>
+        <time datetime={iso(date)}>{long(date)}</time>
+        <h1>{title}</h1>
+        {image && <img class="hero" src={image} alt={alt ?? ''} width="960" height="540" decoding="async" />}
+        <div class="body"><Content /></div>
+      </article>
+      <Footer />
+    </main>
+  </body>
+</html>

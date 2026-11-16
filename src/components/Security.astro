@@ -1,0 +1,151 @@
+---
+// The Security section of the Yo page, built like How Yo works: four points as a list on one side, one picture on the
+// other that turns to the point hovered, focused or clicked, with its line or two at its foot (key words in Sunflower);
+// a fifth entry under the list opens the technical details as a pop-up (in full: yo/spec/v1.md).
+import TechDetails from './TechDetails.astro';
+
+// Headings: the "Yo" of Yo, Yos, YoIP and Your in heavy type, the rest lighter.
+const yo = (text: string) =>
+  text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/(^|[^A-Za-z])Yo/g, '$1<b>Yo</b>');
+
+const tiles = [
+  {
+    img: 'packages',
+    alt: 'A row of cardboard boxes, each with a sleepy purple "Yo" in its window and a padlock',
+    title: 'Yo2Yo Encryption.',
+    tech: ['<em>E2E encrypted</em> with the Signal Protocol.', 'Not even we can read your Yos.'],
+  },
+  {
+    img: 'sealed',
+    alt: 'A cream envelope closed with a purple wax seal stamped "Yo"',
+    title: 'Sealed Yos.',
+    tech: ["We don't know <em>who Yos who</em>."],
+  },
+  {
+    img: 'photos',
+    alt: 'An instant camera labelled "Yo", its photo showing only a padlock',
+    title: 'Photos, encrypted.',
+    tech: ['<em>Photos</em> are E2E encrypted too.'],
+  },
+  {
+    img: 'yours',
+    alt: 'A key in a lock, the keyring tag reads "Yo"',
+    title: 'Yo Backup.',
+    tech: ['Back up your Yo account with a <em>recovery key</em> or <em>Face ID</em>.'],
+  },
+];
+---
+<section class="security" id="security" aria-labelledby="security-title">
+  <div class="inner">
+    <div class="side">
+      <h2 id="security-title">Secure Yos.</h2>
+      <ol class="points">
+        {tiles.map((t, i) => (
+          <li class:list={{ on: i === 0 }} data-i={i}>
+            <button type="button" aria-expanded={i === 0 ? 'true' : 'false'}>
+              <span class="dot" aria-hidden="true"></span>
+              <b set:html={yo(t.title)} />
+            </button>
+          </li>
+        ))}
+        <li class="more">
+          <button type="button" aria-haspopup="dialog" onclick="document.getElementById('tech-details').showModal()">
+            <span class="dot" aria-hidden="true"></span>
+            <b set:html={yo('Technical details')} />
+            <span class="plus" aria-hidden="true">+</span>
+          </button>
+        </li>
+      </ol>
+    </div>
+    <div class="stage">
+      {tiles.map((t, i) => (
+        <figure class:list={{ on: i === 0 }} inert={i !== 0} aria-hidden={i === 0 ? undefined : 'true'}>
+          <img src={`/img/security/${t.img}.webp`} width="960" height="960" alt={t.alt} loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+          <figcaption>{t.tech.map((f) => <span set:html={f} />)}</figcaption>
+        </figure>
+      ))}
+    </div>
+  </div>
+  <TechDetails />
+</section>
+
+<script>
+  // A point hovered (with a mouse), focused or clicked opens and turns the picture to it; the picture tips a hair.
+  document.querySelectorAll<HTMLElement>('.security').forEach((section) => {
+    const items = [...section.querySelectorAll<HTMLLIElement>('.points li:not(.more)')];
+    const pics = [...section.querySelectorAll<HTMLElement>('.stage figure')];
+    const stage = section.querySelector<HTMLElement>('.stage')!;
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let current = 0;
+    const show = (i: number) => {
+      if (i === current) return;
+      const dir = i > current ? -1 : 1;
+      current = i;
+      items.forEach((li, j) => {
+        li.classList.toggle('on', j === i);
+        li.querySelector('button')!.setAttribute('aria-expanded', String(j === i));
+      });
+      // Only the shown picture is reachable; the hidden ones are inert and hidden from screen readers.
+      pics.forEach((p, j) => {
+        p.classList.toggle('on', j === i);
+        p.inert = j !== i;
+        if (j === i) p.removeAttribute('aria-hidden');
+        else p.setAttribute('aria-hidden', 'true');
+      });
+      if (!still)
+        stage.animate(
+          [{ transform: 'rotate(0deg)' }, { transform: `translateY(-2px) rotate(${dir}deg) scale(0.993)`, offset: 0.45 }, { transform: 'rotate(0deg)' }],
+          { duration: 520, easing: 'cubic-bezier(0.3, 1.2, 0.5, 1)' },
+        );
+    };
+    items.forEach((li, i) => {
+      const b = li.querySelector('button')!;
+      b.addEventListener('click', () => show(i));
+      b.addEventListener('focus', () => show(i));
+      b.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') show(i); });
+    });
+  });
+</script>
+
+<style>
+  .security { max-width: 1000px; margin: 0 auto; box-sizing: border-box; padding: clamp(56px, 8vw, 96px) 20px; color: #fff;
+    font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; scroll-margin-top: 0; }
+  .inner { display: flex; flex-direction: column-reverse; align-items: center; gap: 32px; }
+  .side { width: 100%; max-width: 26rem; }
+  h2 { margin: 0 0 18px; font: 900 clamp(2rem, 6.5vw, 3.2rem)/1.05 'Montserrat', sans-serif; letter-spacing: -0.01em;
+    text-shadow: 0 4px 0 rgba(60, 10, 90, 0.2); }
+  .points { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 4px; }
+  li { border-radius: 18px; transition: background 0.2s; }
+  li.on { background: rgba(255, 255, 255, 0.14); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18); }
+  button { all: unset; cursor: pointer; box-sizing: border-box; width: 100%; display: flex; align-items: center; gap: 14px; padding: 12px 14px; }
+  button:focus-visible { outline: 2px solid #F1C40F; outline-offset: 2px; border-radius: 18px; }
+  .dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, 0.35); transition: background 0.2s; }
+  li.on .dot { background: #F1C40F; box-shadow: 0 0 0 4px rgba(241, 196, 15, 0.25); }
+  b { font: 700 clamp(1.1rem, 4.2vw, 1.35rem)/1.2 'Montserrat', sans-serif; opacity: 0.6; transition: opacity 0.2s; }
+  b :global(b) { font-weight: 900; }
+  li.on b { opacity: 1; }
+  /* the last point opens the technical details pop-up: its yellow + after the words */
+  .plus { flex: none; width: 24px; height: 24px; margin-left: -4px; border-radius: 50%; display: grid; place-items: center;
+    font: 700 17px/1 'Montserrat', sans-serif; color: #8E44AD; background: linear-gradient(180deg, #FFE36E, #F1C40F);
+    box-shadow: inset 0 -2px 0 rgba(150, 100, 0, 0.35); }
+  .more b { opacity: 0.85; }
+  .more button:hover b { opacity: 1; }
+  .stage { position: relative; width: min(100%, 420px); aspect-ratio: 1; border-radius: 34px; overflow: hidden;
+    box-shadow: 0 30px 60px -30px rgba(40, 5, 70, 0.8); will-change: transform; }
+  /* each point's picture with its two lines in the plain purple at its foot */
+  figure { position: absolute; inset: 0; margin: 0; opacity: 0; transform: scale(1.03); transition: opacity 0.35s, transform 0.5s; }
+  figure.on { opacity: 1; transform: none; }
+  figure img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 22px 24px; text-align: center;
+    font: 600 clamp(0.95rem, 2.2vw, 1.08rem)/1.45 'Montserrat', sans-serif; }
+  figcaption span { display: block; }
+  figcaption :global(em) { font-style: normal; color: #F1C40F; }
+  figure:not(.on) { pointer-events: none; }
+  /* a wide screen: the list left, the picture right (How Yo works has its phone on the left) */
+  @media (min-width: 800px) {
+    .inner { flex-direction: row; justify-content: center; gap: clamp(48px, 8vw, 112px); }
+    .stage { width: clamp(300px, 38vw, 420px); flex: none; }
+    h2 { padding-left: 14px; margin-bottom: 22px; }
+  }
+  @media (prefers-reduced-motion: reduce) { li, .dot, b, figure { transition: none; } }
+</style>

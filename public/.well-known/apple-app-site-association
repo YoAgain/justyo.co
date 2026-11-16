@@ -16,7 +16,7 @@
             "exclude": true
           },
           {
-            "/": "/security*",
+            "/": "/security",
             "exclude": true
           },
           {
@@ -28,7 +28,7 @@
             "exclude": true
           },
           {
-            "/": "/privacy*",
+            "/": "/privacy",
             "exclude": true
           },
           {

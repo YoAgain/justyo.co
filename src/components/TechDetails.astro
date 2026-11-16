@@ -1,0 +1,136 @@
+---
+// Security's technical details: everything the spec says, by topic, in a pop-up (a modal dialog). Security's list opens
+// it with its last point; the ×, Escape or a click beside it closes it.
+import { operator } from '../data/legal';
+const yo = (text: string) =>
+  text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/(^|[^A-Za-z])Yo/g, '$1<b>Yo</b>');
+---
+<dialog class="tech" id="tech-details" aria-labelledby="tech-title">
+  <div class="head">
+    <h2 id="tech-title" tabindex="-1" autofocus set:html={yo("Technical details")} />
+    <form method="dialog"><button class="x" aria-label="Close">+</button></form>
+  </div>
+  <p class="intro">Everything below is specified in full in the
+    <a href="https://github.com/YoAgain/yo/blob/main/spec/v1.md">Yo over IP spec</a>, next to the open source code.</p>
+  <div class="groups">
+    <div>
+      <h3 set:html={yo("Encryption")} />
+      <ul>
+        <li>libsignal: PQXDH, Double Ratchet + SPQR</li>
+        <li>Post-quantum, forward secret, self-healing</li>
+      </ul>
+    </div>
+    <div>
+      <h3 set:html={yo("Metadata")} />
+      <ul>
+        <li>Sealed sender: Signal's, with a sender certificate</li>
+        <li>Server sees: inbox + size bucket</li>
+        <li>Padding: 1 / 4 / 16 / 64 KiB</li>
+        <li>Sealed only for contacts (access key), limited by address</li>
+        <li>Anonymous requests: separate connections</li>
+      </ul>
+    </div>
+    <div>
+      <h3 set:html={yo("Identity & keys")} />
+      <ul>
+        <li>Account key certifies your devices</li>
+        <li>Safety numbers, verified mark, key-change warning</li>
+        <li>Key answers signed by the hub, pinned in the app</li>
+        <li>No phone number, no address book</li>
+      </ul>
+    </div>
+    <div>
+      <h3 set:html={yo("On your iPhone")} />
+      <ul>
+        <li>Local state encrypted, key in the Keychain</li>
+      </ul>
+    </div>
+    <div>
+      <h3 set:html={yo("Photos & videos")} />
+      <ul>
+        <li>Own random key per photo / video</li>
+        <li>Limited fetches, deleted after viewing</li>
+      </ul>
+    </div>
+    <div>
+      <h3 set:html={yo("Backup")} />
+      <ul>
+        <li>Encrypted on your iPhone: passkey or 12 words</li>
+        <li>Server stores it, can't read it</li>
+      </ul>
+    </div>
+    <div>
+      <h3 set:html={yo("Server")} />
+      <ul>
+        <li>Signed requests, replay protection</li>
+        <li>What it keeps: <a href="/p/privacy">privacy policy</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 set:html={yo("Code")} />
+      <ul>
+        <li>Open source: MIT, libsignal AGPL-3.0</li>
+        <li>Fuzzing, stress tests, signed commits</li>
+        <li><a href="https://github.com/YoAgain/yo">Source</a> · <a href="https://github.com/YoAgain/yo/blob/main/spec/v1.md">Spec</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 set:html={yo("Not there yet")} />
+      <ul>
+        <li>Key transparency (until then: compare safety numbers)</li>
+        <li>TLS pinning, on purpose: keys are server-signed instead</li>
+      </ul>
+    </div>
+  </div>
+  <p class="after">Found a security problem? Write to <a href={`mailto:${operator.email}`}>{operator.email}</a>.
+    <span class="muted">Last updated: November 15, 2026</span></p>
+</dialog>
+<script>
+  // A click on the dim backdrop (outside the box) closes the pop-up.
+  document.querySelectorAll<HTMLDialogElement>('dialog.tech').forEach((d) =>
+    d.addEventListener('click', (e) => {
+      const r = d.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) d.close();
+    }),
+  );
+</script>
+<style>
+  /* the pop-up: one soft purple card like the site's tiles; the topics as small tiles flowing in up to three columns */
+  .tech {
+    width: min(960px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); box-sizing: border-box; padding: 0; border: 0;
+    border-radius: 30px; overflow: auto; overscroll-behavior: contain; color: #fff;
+    font: 500 14.5px/1.45 'Montserrat', sans-serif;
+    background: linear-gradient(165deg, #AE7BC8 0%, #9C5DB8 55%, #8B45A8 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 40px 80px -20px rgba(30, 0, 50, 0.7);
+  }
+  .tech::backdrop { background: rgba(40, 5, 70, 0.55); backdrop-filter: blur(4px); }
+  .tech[open] { animation: pop 0.25s cubic-bezier(0.3, 1.3, 0.5, 1); }
+  @keyframes pop { from { opacity: 0; transform: translateY(12px) scale(0.97); } }
+  .head { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 26px 28px 0; }
+  h2 { margin: 0; outline: none; font: 900 clamp(1.4rem, 4vw, 1.9rem)/1.1 'Montserrat', sans-serif; text-shadow: 0 3px 0 rgba(60, 10, 90, 0.2); }
+  h2 :global(b) { font-weight: 900; }
+  form { margin: 0; }
+  .x {
+    all: unset; cursor: pointer; flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+    transform: rotate(45deg); font: 700 22px/1 'Montserrat', sans-serif; color: #8E44AD;
+    background: linear-gradient(180deg, #FFE36E, #F1C40F);
+    box-shadow: inset 0 -2px 0 rgba(150, 100, 0, 0.35), 0 4px 10px -4px rgba(40, 5, 70, 0.6);
+  }
+  .x:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  a { color: #F1C40F; text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .intro { margin: 8px 0 0; padding: 0 28px; opacity: 0.85; }
+  .groups { columns: 1; column-gap: 14px; padding: 20px 20px 6px; }
+  .groups > div { break-inside: avoid; margin: 0 0 14px; padding: 14px 18px 12px; border-radius: 20px;
+    background: rgba(255, 255, 255, 0.12); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16); }
+  h3 { margin: 0 0 6px; font: 800 0.95rem/1.2 'Montserrat', sans-serif; color: #F1C40F; }
+  h3 :global(b) { font-weight: 900; }
+  .groups ul { margin: 0; padding: 0; list-style: none; }
+  .groups li { position: relative; margin: 4px 0; padding-left: 14px; }
+  .groups li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: rgba(255, 255, 255, 0.6); }
+  .after { margin: 0; padding: 4px 28px 24px; font-size: 13.5px; opacity: 0.85; }
+  .after .muted { margin-left: 0.6em; opacity: 0.7; }
+  @media (min-width: 560px) { .groups { columns: 2; } }
+  @media (min-width: 860px) { .groups { columns: 3; } }
+  @media (prefers-reduced-motion: reduce) { .tech[open] { animation: none; } }
+</style>

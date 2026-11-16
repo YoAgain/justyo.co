@@ -1,0 +1,805 @@
+---
+// YoPhone: the Yo app on a modern iPhone, drawn in CSS, behaving as the iOS app does. One component for every page
+// that shows the app (the hero, How Yo works, …); its behaviour is in yo-phone.ts beside it.
+//
+//   <YoPhone />                                    the list of friends, tap a name to send a Yo
+//   <YoPhone tilt={-3} autoplay />                 tilted; Yos arrive now and then (the open app marks the row, no banner)
+//   <YoPhone screens={['list', 'signup', 'locked', 'code']} screen="list" />
+//                                                  several screens, one shown; switch with getYoPhone(el).show('code')
+//   <YoPhone screen="signup" interactive={false} width="220px" />
+//
+// Props
+// The camera (bottom right) opens the app's camera mode: the bars see-through over a picture, a tap on a name
+// "takes" a photo and sends it ("Sent 📷", the undo ring for 2 s; no camera is used); "✕" or Escape closes it. "•••"
+// opens the app's menu (Invite, Add Group, Settings); Add Group is a sheet with a name and the friends to pick, and
+// Create puts the group's bar on top, a group as the others.
+//
+//   names        the bars, top to bottom: a friend's name, or a group { group: 'FAMILY', members: ['MOM', …] } (default
+//                LEO, MIA, the groups FAMILY and BFFS 💃, EMMA, JONAS, ZOE); "+" comes last as a bar
+//   screen       the screen shown: 'list' (default) | 'signup' (just a username) | 'locked' (a sealed Yo on the lock
+//                screen) | 'code' (a sealed Yo: Yo-to-Yo encrypted, Yo over IP, open source)
+//   screens      the screens drawn (default: just `screen`); for a phone that changes its screen
+//   tilt         degrees, e.g. -3 (default 0); the phone is rotated as one layer, so the bars' edges stay smooth
+//   width        the phone's width as a CSS length (default: the --w of a parent, else 300px); all inside scales with it
+//   interactive  taps on names send Yos, with the sound, and the friend Yos back (default true)
+//   autoplay     now and then a friend's Yo arrives by itself, while the phone is in view; silent until the visitor
+//                has tapped something (default false; never with reduced motion)
+//   banner       an arriving Yo also drops the app's notification ("Yo", "From NAME") as a banner in from the top (default false: the app itself
+//                shows no banner while open, only the bar)
+//   label        what a screen reader hears: for an interactive phone the name of the group it is ("The Yo app" by
+//                default), whose names and buttons are reached one by one; for one that is not, the phone is one image
+//                and this describes it (default: a description of the screen)
+//   id           an id for the phone's element
+//
+// What it does, after the iOS app (FriendList.swift): a tap says "Sent Yo" on the bar, one "!" for each further tap,
+// at most five, then " +n"; 1.5 s after the last tap the bar says its name again and goes on top. A Yo arriving says
+// "Yo" at the bar's end ("Yo!!" for three), stands 3 s, its "!"s go one by one, it fades out by 5 s; the bar goes on
+// top (a delete and an insert: its place fades, the bars above slide down, it comes in from the top). A group's bar
+// has the app's group sign before its name; a Yo to it goes to all, and its members' Yos come in as lines under the
+// name ("MOM: Yo!!"), the bar growing by one bar for each. "+" opens the name field: a name typed (the app's rules)
+// is added on top in the next colour; Escape or a tap elsewhere closes it. Nothing leaves the page.
+
+export type Screen = 'list' | 'signup' | 'locked' | 'code';
+export type Entry = string | { group: string; members: string[] };
+interface Props {
+  names?: Entry[];
+  screen?: Screen;
+  screens?: Screen[];
+  tilt?: number;
+  width?: string;
+  interactive?: boolean;
+  autoplay?: boolean;
+  banner?: boolean;
+  label?: string;
+  id?: string;
+  class?: string;
+}
+const {
+  names = [
+    'LEO',
+    'MIA',
+    { group: 'FAMILY', members: ['MOM', 'DAD', 'LILY'] },
+    { group: 'BFFS 💃', members: ['ZOE', 'KAI', 'NOAH'] },
+    'EMMA',
+    'JONAS',
+    'ZOE',
+  ],
+  screen = 'list',
+  screens: drawn = [screen],
+  tilt = 0,
+  width,
+  interactive = true,
+  autoplay = false,
+  banner = false,
+  label,
+  id,
+  class: cls,
+} = Astro.props;
+const screens = drawn.includes(screen) ? drawn : [screen, ...drawn];
+// The app's palette and order (Brand.swift, Color.rows); a friend keeps their colour, "+" has the next one.
+const rows = ['#1ABC9C', '#2ECC71', '#3498DB', '#34495E', '#16A085', '#F1C40F', '#2980B9', '#8E44AD'];
+const said: Record<Screen, string> = {
+  list: 'An iPhone with Yo open: names on coloured bars. Tap one to send a Yo.',
+  signup: 'Signing up for Yo: just a username, no phone number, no email.',
+  locked: 'A Yo arriving on the lock screen, sealed: end-to-end encrypted.',
+  code: "Yo's source code, open on GitHub.",
+};
+const style = [width && `--w:${width}`, tilt && `--tilt:${tilt}deg`].filter(Boolean).join(';') || undefined;
+const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z';
+---
+<div
+  class:list={['yo-phone', cls, { tilt: tilt !== 0 }]}
+  id={id}
+  style={style}
+  role={interactive ? 'group' : 'img'}
+  aria-label={interactive ? label ?? 'The Yo app' : label ?? said[screen]}
+  data-yo-phone
+  data-interactive={interactive ? '' : undefined}
+  data-autoplay={autoplay ? '' : undefined}
+  data-banner={banner ? '' : undefined}
+>
+  {/* A phone that is not interactive is one image: nothing inside it takes the focus. */}
+  <div class="screen" inert={!interactive}>
+    {screens.includes('list') && (
+      <div class:list={['scene', 's-list', { on: screen === 'list' }]} data-screen="list" inert={screen !== 'list'}>
+        <ul class="bars">
+          {names.map((n, i) => {
+            const group = typeof n === 'string' ? undefined : n;
+            const name = group ? group.group : (n as string);
+            return (
+              <li style={`--c:${rows[i % rows.length]}`} data-name={name} data-color={i % rows.length}
+                data-members={group?.members.join(',')}>
+                <span class="head" role={interactive ? 'button' : undefined} tabindex={interactive ? 0 : undefined}>
+                  <span class="words">
+                    {group && <svg class="gsign" viewBox="0 0 30 20" aria-hidden="true"><circle cx="15" cy="5.2" r="4.2"/><path d="M7.6 19.2c0-4.6 3.3-7.6 7.4-7.6s7.4 3 7.4 7.6z"/><circle cx="6" cy="7" r="3.3"/><path d="M0 19.2c0-3.8 2.5-6.2 5.8-6.2 1.2 0 2.3.3 3.1.9-1.9 1.4-3.1 3.0-3.1 5.3z"/><circle cx="24" cy="7" r="3.3"/><path d="M30 19.2c0-3.8-2.5-6.2-5.8-6.2-1.2 0-2.3.3-3.1.9 1.9 1.4 3.1 3.0 3.1 5.3z"/></svg>}
+                    <span class="text">{name}</span><span class="tail"></span>
+                  </span>
+                  <span class="end"></span>
+                </span>
+                {group && <span class="lines"></span>}
+              </li>
+            );
+          })}
+          <li class="add" style={`--c:${rows[names.length % rows.length]}`}><span class="head" role={interactive ? 'button' : undefined} tabindex={interactive ? 0 : undefined} aria-label={interactive ? 'Add Friend' : undefined}><span class="words"><span class="text">+</span></span></span></li>
+        </ul>
+        <div class="cambg">
+          <div class="lens"><img class="live back" alt="" data-src="/img/security/photos.webp" /><img class="live front" alt="" data-src="/img/security/yours.webp" /></div>
+          <img class="picked" alt="" />
+        </div>
+        <span class="flash"></span>
+        <span class="camhint" aria-hidden="true">Tap a name · Hold for video</span>
+        <button type="button" class="fab menu" aria-label="More" aria-haspopup="menu" aria-expanded="false"><i></i><i></i><i></i></button>
+        <button type="button" class="fab lib" aria-label="Photo Library" aria-haspopup="dialog" inert><img class="thumb" alt="" /><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="1.8" fill="currentColor"/><path d="m4 18 5-5 3 3 3-3.5 5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="zoom" aria-label="Zoom 1×" inert>1×</button>
+        <button type="button" class="fab flip" aria-label="Switch Camera" inert><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 9A8 8 0 0 0 5.2 7.2M4.5 15a8 8 0 0 0 14.3 1.8M5 3.5v4h4M19 20.5v-4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="fab cam" aria-label="Camera">
+          <svg class="i-cam" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.2 4.5a1.6 1.6 0 0 0-1.38.8L7 6.7H5A2.5 2.5 0 0 0 2.5 9.2v8.3A2.5 2.5 0 0 0 5 20h14a2.5 2.5 0 0 0 2.5-2.5V9.2A2.5 2.5 0 0 0 19 6.7h-2l-.82-1.4a1.6 1.6 0 0 0-1.38-.8zM12 9a4.1 4.1 0 1 1 0 8.2A4.1 4.1 0 0 1 12 9zm0 1.8a2.3 2.3 0 1 0 0 4.6 2.3 2.3 0 0 0 0-4.6z"/></svg>
+          <svg class="i-x" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+        </button>
+        <div class="pop" role="menu" inert>
+          <button type="button" role="menuitem" data-do="invite"><span>Invite</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3.5M8 7l4-4 4 4M7 10H5.5v10.5h13V10H17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" role="menuitem" data-do="group" aria-haspopup="dialog"><span>Add Group</span><svg viewBox="0 0 30 20" aria-hidden="true"><circle cx="15" cy="5.2" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.4 19c.3-4 3-6.6 6.6-6.6s6.3 2.6 6.6 6.6zM1 19c.2-3.2 2.2-5.3 4.8-5.3M29 19c-.2-3.2-2.2-5.3-4.8-5.3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="6" cy="7.3" r="2.9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="24" cy="7.3" r="2.9" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
+          <hr role="separator" />
+          {/* Settings has nothing to show on a web page: it is there as in the app, disabled and out of the Tab order. */}
+          <button type="button" role="menuitem" data-do="settings" aria-disabled="true" tabindex="-1"><span>Settings</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.9 1.9M16.6 16.6l1.9 1.9M5.5 18.5l1.9-1.9M16.6 7.4l1.9-1.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        </div>
+        <div class="scrim"></div>
+        <div class="sheet picker" role="dialog" aria-modal="true" aria-label="Photos" inert>
+          <div class="sbar"><button type="button" class="sx px" aria-label="Close">✕</button><b>Photos</b><span></span></div>
+          <div class="sbody"><ul class="grid">
+            {['photos', 'sealed', 'packages', 'yours'].map((f) => `/img/security/${f}.webp`)
+              .concat(['yo-logo-phone', 'Yo_Logo_RBG', 'yo-three-screens', 'yo-two-phones'].map((f) => `/press/thumbs/${f}.webp`))
+              .map((src, i) => <li data-src={src}><button type="button" aria-label={`Photo ${i + 1}`}></button></li>)}
+          </ul></div>
+        </div>
+        <div class="sheet group-sheet" role="dialog" aria-modal="true" aria-label="Add Group" inert>
+          <div class="sbar"><button type="button" class="sx" aria-label="Close">✕</button><b>Add Group</b><button type="button" class="screate" disabled>Create</button></div>
+          <div class="sbody">
+            <input class="gname" type="text" placeholder="Group Name" aria-label="Group Name" autocomplete="off" spellcheck="false" />
+            <p class="shead">Members</p>
+            <ul class="pick" aria-label="Members"></ul>
+            <p class="sfoot">Up to 19 friends.</p>
+          </div>
+        </div>
+        {banner && <div class="push"><i>Yo</i><span><b>Yo</b><small>From <span class="who">MIA</span></small></span><time>now</time></div>}
+      </div>
+    )}
+    {screens.includes('signup') && (
+      <div class:list={['scene', 's-signup', { on: screen === 'signup' }]} data-screen="signup" inert={screen !== 'signup'}>
+        <div class="signup">
+          <b class="logo">Yo</b>
+          <span class="label">Pick a username</span>
+          <span class="field"><i>L</i><i>E</i><i>O</i><u></u></span>
+          <span class="nope"><s>Phone number</s><s>Email</s></span>
+          <span class="start">TAP TO START</span>
+        </div>
+      </div>
+    )}
+    {screens.includes('locked') && (
+      <div class:list={['scene', 's-locked', { on: screen === 'locked' }]} data-screen="locked" inert={screen !== 'locked'}>
+        <div class="lock">
+          <span class="clock">9:41</span>
+          <span class="date">Monday, November 16</span>
+          <span class="note">
+            <i class="app">Yo</i>
+            <span class="msg"><b>Yo</b><small>From MIA</small></span>
+            <svg class="pad" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5" fill="currentColor"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>
+          </span>
+          <span class="env"><span class="flap"></span><span class="seal">Yo</span></span>
+        </div>
+      </div>
+    )}
+    {screens.includes('code') && (
+      <div class:list={['scene', 's-code', { on: screen === 'code' }]} data-screen="code" inert={screen !== 'code'}>
+        <div class="sealed">
+          <span class="env"><span class="flap"></span><span class="seal">Yo</span></span>
+          <ul class="facts">
+            <li><svg viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5" fill="currentColor"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg><span>Yo-to-Yo encrypted.<a href="https://signal.org/docs/" target="_blank" rel="noopener">Signal Protocol</a></span></li>
+            <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.2-3.8-8.5s1.2-6.1 3.8-8.5z" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Yo over IP.<a href="https://github.com/YoAgain/yo/blob/main/spec/v1.md" target="_blank" rel="noopener">Our spec</a></span></li>
+            <li><svg viewBox="0 0 16 16"><path fill="currentColor" d={github}/></svg><span>Open source.<a href="https://github.com/YoAgain/yo" target="_blank" rel="noopener">YoAgain/yo</a></span></li>
+          </ul>
+        </div>
+      </div>
+    )}
+    <div class="status" aria-hidden="true">
+      <span class="time">9:41</span>
+      <span class="icons">
+        <svg class="signal" viewBox="0 0 18 12"><rect x="0" y="7.5" width="3" height="4.5" rx="0.9"/><rect x="5" y="5" width="3" height="7" rx="0.9"/><rect x="10" y="2.5" width="3" height="9.5" rx="0.9"/><rect x="15" y="0" width="3" height="12" rx="0.9"/></svg>
+        <svg class="wifi" viewBox="0 0 17 12"><path d="M8.5 2.3c2.4 0 4.6.9 6.3 2.5.2.2.5.2.7 0l1.2-1.2c.2-.2.2-.5 0-.7A11.1 11.1 0 0 0 .3 2.9c-.2.2-.2.5 0 .7l1.2 1.2c.2.2.5.2.7 0a9.1 9.1 0 0 1 6.3-2.5zm0 3.7c1.4 0 2.7.5 3.7 1.4.2.2.5.2.7 0l1.2-1.2c.2-.2.2-.5 0-.7a7.6 7.6 0 0 0-11.2 0c-.2.2-.2.5 0 .7l1.2 1.2c.2.2.5.2.7 0 1-.9 2.3-1.4 3.7-1.4zm2.5 3.3c.2-.2.2-.5 0-.7a3.6 3.6 0 0 0-5 0c-.2.2-.2.5 0 .7l2.1 2.1c.2.2.5.2.7 0z"/></svg>
+        <svg class="battery" viewBox="0 0 27 13"><rect x="0.5" y="0.5" width="23" height="12" rx="3.6" fill="none" stroke="currentColor" stroke-opacity="0.9"/><rect x="2" y="2" width="15.2" height="9" rx="2.2"/><path d="M25 4.4v4.2a2.1 2.1 0 0 0 0-4.2z" fill-opacity="0.9"/></svg>
+      </span>
+    </div>
+    <div class="island" aria-hidden="true"></div>
+  </div>
+</div>
+
+<script>
+  import { initYoPhones } from './yo-phone';
+  initYoPhones();
+</script>
+
+<style is:global>
+  /* ---- The phone: a rounded body, a thin metal band, the side keys; --w sets its width, --pw is used inside ---- */
+  .yo-phone {
+    --pw: var(--w, 300px);
+    position: relative;
+    width: var(--pw);
+    flex: none;
+    box-sizing: content-box;
+    padding: calc(var(--pw) * 0.037);
+    border-radius: calc(var(--pw) * 0.187);
+    background: linear-gradient(150deg, #5a4a66 0%, #2a2030 40%, #17111b 100%);
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255, 255, 255, 0.28),
+      inset 0 0 0 4px #0d0910,
+      0 40px 70px -30px rgba(40, 5, 70, 0.95),
+      0 12px 24px -12px rgba(40, 5, 70, 0.6);
+    font-family: 'Montserrat', sans-serif;
+    color: #fff;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Tilted: rotated as one composited layer, so the bars' edges are filtered smoothly instead of stair-stepped */
+  .yo-phone.tilt {
+    transform: rotate(var(--tilt, 0deg)) translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    outline: 1px solid transparent;
+  }
+  .yo-phone::before, .yo-phone::after { /* the side keys */
+    content: "";
+    position: absolute;
+    width: 4px;
+    border-radius: 2px;
+    background: #3a2f42;
+  }
+  .yo-phone::before { left: -3px; top: 24%; height: 17%;
+    background: linear-gradient(#3a2f42 0 40%, transparent 40% 56%, #3a2f42 56%); }
+  .yo-phone::after { right: -3px; top: 30%; height: 12%; }
+  .yo-phone .screen {
+    --bar: calc(var(--pw) * 0.226); /* a bar: 90 points of a 390-point-wide iPhone */
+    --top: calc(var(--pw) * 0.15);  /* the status bar */
+    position: relative;
+    overflow: hidden;
+    height: calc(var(--pw) * 2.1);
+    border-radius: calc(var(--pw) * 0.15);
+    background: #9B59B6;
+    isolation: isolate;
+  }
+
+  /* ---- The iOS status bar at a real iPhone's sizes (points of a 390-point screen): the time left of the Dynamic
+     Island, signal, Wi-Fi and battery right of it, on the island's middle line ---- */
+  .yo-phone .status {
+    --pt: calc(var(--pw) / 390);
+    position: absolute;
+    inset: 0 0 auto;
+    height: var(--top);
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: calc(var(--pt) * 2) calc(var(--pt) * 26) 0 calc(var(--pt) * 46);
+    box-sizing: border-box;
+    pointer-events: none;
+  }
+  .yo-phone .time { font: 600 calc(var(--pt) * 17)/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; letter-spacing: -0.01em; }
+  .yo-phone .icons { display: flex; align-items: center; gap: calc(var(--pt) * 5); }
+  .yo-phone .icons svg { display: block; fill: currentColor; }
+  .yo-phone .signal { width: calc(var(--pt) * 18); height: calc(var(--pt) * 12); }
+  .yo-phone .wifi { width: calc(var(--pt) * 17); height: calc(var(--pt) * 12); }
+  .yo-phone .battery { width: calc(var(--pt) * 27); height: calc(var(--pt) * 13); }
+  .yo-phone .island {
+    position: absolute;
+    top: calc(var(--pw) * 0.033);
+    left: 50%;
+    z-index: 6;
+    width: calc(var(--pw) * 0.307);
+    height: calc(var(--pw) * 0.09);
+    transform: translateX(-50%);
+    border-radius: 99px;
+    background: #000;
+  }
+
+  /* ---- Screens: each fills the screen; the one "on" shows (opacity and transform only) ---- */
+  .yo-phone .scene {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: translateY(5%) scale(1.03);
+    transition: opacity 0.45s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+  }
+  .yo-phone .scene.on { opacity: 1; transform: none; pointer-events: auto; }
+
+  /* ---- The list: the bars under the status bar, "+" as one more, the floating buttons at the bottom ---- */
+  .yo-phone .bars {
+    position: absolute;
+    inset: var(--top) 0 0;
+    overflow: hidden auto;
+    scrollbar-width: none;
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .yo-phone .bars li {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    font: 700 calc(var(--pw) * 0.077)/1 'Montserrat', sans-serif;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  .yo-phone .bars::-webkit-scrollbar { display: none; }
+  .yo-phone .head { position: relative; height: var(--bar); display: grid; place-items: center; }
+  /* A group: the app's sign (person.3.fill) before its name, outside it, so the name stays in the middle */
+  .yo-phone .gsign {
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    width: 1.05em;
+    height: 0.7em;
+    margin: -0.36em 0.32em 0 0;
+    fill: currentColor;
+  }
+  /* A group's Yos, by whom: a line each under the name, as tall as a bar ("MOM: Yo!!") */
+  .yo-phone .lines { display: block; }
+  .yo-phone .gline { height: var(--bar); display: grid; place-items: center; transition: opacity 2s ease; }
+  .yo-phone .gline.fresh { animation: yp-line 0.35s ease-out; }
+  .yo-phone .lines.fading .gline { opacity: 0; }
+  @keyframes yp-line { from { opacity: 0; } }
+  /* "+" open: the name field, typed in capitals as names show */
+  .yo-phone .add input {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    height: var(--bar);
+    padding: 0 calc(var(--pw) * 0.06);
+    text-align: center;
+    text-transform: uppercase;
+    font: inherit;
+    letter-spacing: inherit;
+    color: #fff;
+    caret-color: #fff;
+    cursor: text;
+  }
+  .yo-phone .add input::placeholder { color: rgba(255, 255, 255, 0.6); text-transform: none; }
+  .yo-phone .bars li { background: var(--c); transition: background-color 0.3s ease; }
+  .yo-phone[data-interactive] .bars li { cursor: pointer; }
+  .yo-phone .bars li.ghost { position: absolute; left: 0; right: 0; z-index: 0; pointer-events: none; }
+  /* Sent: the words in the middle, their "!"s and " +n" hanging after them, so nothing shifts as they come */
+  .yo-phone .words { position: relative; }
+  .yo-phone .words.fresh { animation: yp-words 0.2s ease-out; }
+  .yo-phone .tail { position: absolute; left: 100%; top: 0; display: flex; white-space: pre; }
+  .yo-phone .tail b, .yo-phone .end b { font-weight: inherit; display: inline-block; animation: yp-bang 0.16s ease-out; }
+  .yo-phone .plus { font-variant-numeric: tabular-nums; white-space: pre; }
+  /* Received: the name stays, "Yo" and its "!"s at the bar's end; it knocks as a run starts, fades as it ends */
+  .yo-phone .end {
+    position: absolute;
+    right: calc(var(--pw) * 0.06);
+    top: 50%;
+    display: flex;
+    margin-top: -0.5em;
+    font-weight: 900;
+    transition: opacity 2s ease;
+  }
+  .yo-phone .end:empty { display: none; }
+  .yo-phone .end.knock { animation: yp-knock 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.4); }
+  .yo-phone .end.fading { opacity: 0; }
+  /* "+" open: a name field for a moment */
+  .yo-phone .add .text { font-size: calc(var(--pw) * 0.1); }
+  .yo-phone .add.adding .head { display: block; }
+  @keyframes yp-words { from { opacity: 0; transform: scale(0.94); } }
+  @keyframes yp-bang { from { opacity: 0; transform: translateX(0.45em); } }
+  @keyframes yp-knock { 0% { opacity: 0; transform: translateX(0.6em); } 60% { transform: translateX(-0.08em); } }
+  @keyframes yp-blink { 50% { opacity: 0; } }
+
+  /* The phone's controls are buttons drawn exactly as before: nothing of a button's own look is kept. */
+  .yo-phone .fab, .yo-phone .zoom { all: unset; }
+  /* The keyboard's focus: a white ring on the control, inside the edge where the screen would cut it off. */
+  .yo-phone .screen button:focus-visible, .yo-phone .screen .head[tabindex]:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
+  .yo-phone .screen .fab:focus-visible, .yo-phone .screen .zoom:focus-visible { outline-offset: 2px; }
+  .yo-phone .fab { /* "•••" and the camera, in glass, at the bottom corners */
+    position: absolute;
+    bottom: calc(var(--pw) * 0.045);
+    z-index: 2;
+    width: calc(var(--pw) * 0.133);
+    height: calc(var(--pw) * 0.133);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--pw) * 0.008);
+    background: rgba(255, 255, 255, 0.22);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 6px 14px -6px rgba(40, 5, 70, 0.6);
+  }
+  .yo-phone[data-interactive] .fab.menu, .yo-phone[data-interactive] .fab.cam { cursor: pointer; }
+  .yo-phone .menu { left: calc(var(--pw) * 0.045); }
+  .yo-phone .menu i { width: calc(var(--pw) * 0.014); height: calc(var(--pw) * 0.014); border-radius: 50%; background: #fff; }
+  .yo-phone .cam { right: calc(var(--pw) * 0.045); }
+  .yo-phone .fab svg { width: 52%; height: 52%; }
+  .yo-phone .cam .i-x { position: absolute; width: 40%; height: 40%; }
+  .yo-phone .cam svg, .yo-phone .fab.menu, .yo-phone .lib, .yo-phone .flip, .yo-phone .zoom, .yo-phone .camhint {
+    transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .yo-phone .cam .i-x, .yo-phone .lib, .yo-phone .flip, .yo-phone .zoom, .yo-phone .camhint { opacity: 0; transform: scale(0.8); pointer-events: none; }
+
+  /* Camera mode, the app's camera "context": the live picture behind the bars, the bars see-through (45%), "+" gone;
+     at the bottom the library, the zoom, the switch and "✕"; what to do in a glass capsule over them */
+  /* The camera's picture: back or front (mirrored, as the app shows the selfie camera), zoomed by the 1× button; a
+     photo picked from the library stands in for it */
+  .yo-phone .cambg { position: absolute; inset: 0; z-index: 0; overflow: hidden; opacity: 0; transition: opacity 0.35s ease; }
+  .yo-phone .lens { position: absolute; inset: 0; transform: scale(var(--zoom, 1.3)); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .yo-phone .live, .yo-phone .picked { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity 0.25s ease; }
+  .yo-phone .live.front { opacity: 0; transform: scaleX(-1); }
+  .yo-phone.front .live.front { opacity: 1; }
+  .yo-phone.front .live.back { opacity: 0; }
+  .yo-phone .picked { opacity: 0; }
+  .yo-phone.has-picked .picked { opacity: 1; }
+  .yo-phone .zoom { cursor: pointer; }
+  .yo-phone.camera.front .zoom, .yo-phone.camera.has-picked .zoom { opacity: 0; transform: scale(0.8); pointer-events: none; }
+  .yo-phone.camera .lib, .yo-phone.camera .flip { cursor: pointer; }
+  .yo-phone .lib .thumb { display: none; position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+  .yo-phone.has-picked .lib .thumb { display: block; }
+  .yo-phone.has-picked .lib svg { opacity: 0; }
+  /* The library: the app's photo picker, a grid of square pictures */
+  .yo-phone .grid { list-style: none; margin: 0 calc(var(--pw) * -0.045); padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .yo-phone .grid li { position: relative; aspect-ratio: 1; background: #2C2C2E center / cover no-repeat; cursor: pointer; }
+  .yo-phone .grid button { all: unset; position: absolute; inset: 0; cursor: pointer; }
+  .yo-phone .grid li:hover { filter: brightness(1.1); }
+  .yo-phone .bars { z-index: 1; }
+  .yo-phone .flash { position: absolute; inset: 0; z-index: 4; background: #fff; opacity: 0; pointer-events: none; }
+  .yo-phone .flash.go { animation: yp-flash 0.35s ease-out; }
+  @keyframes yp-flash { from { opacity: 0.85; } }
+  .yo-phone.camera .cambg { opacity: 1; }
+  .yo-phone.camera .bars li { background: color-mix(in srgb, var(--c) 45%, transparent); }
+  .yo-phone.camera .bars .add { display: none; }
+  .yo-phone.camera .cam .i-cam, .yo-phone.camera .fab.menu { opacity: 0; transform: scale(0.8); pointer-events: none; }
+  .yo-phone.camera .cam .i-x, .yo-phone.camera .lib, .yo-phone.camera .flip, .yo-phone.camera .zoom, .yo-phone.camera .camhint { opacity: 1; transform: none; }
+  .yo-phone.camera .lib, .yo-phone.camera .flip, .yo-phone.camera .zoom { pointer-events: auto; }
+  .yo-phone.camera.front .zoom, .yo-phone.camera.has-picked .zoom { pointer-events: none; }
+  .yo-phone .lib { left: calc(var(--pw) * 0.045); }
+  .yo-phone .flip { right: calc(var(--pw) * 0.2); }
+  .yo-phone .zoom {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--pw) * 0.07);
+    z-index: 2;
+    width: calc(var(--pw) * 0.1);
+    height: calc(var(--pw) * 0.1);
+    margin-left: calc(var(--pw) * -0.05);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.22);
+    font: 700 calc(var(--pw) * 0.034)/1 -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .yo-phone .camhint {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--pw) * 0.21);
+    z-index: 2;
+    translate: -50% 0;
+    padding: calc(var(--pw) * 0.022) calc(var(--pw) * 0.045);
+    border-radius: 99px;
+    background: rgba(40, 20, 50, 0.45);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    font: 600 calc(var(--pw) * 0.038)/1 -apple-system, BlinkMacSystemFont, sans-serif;
+    white-space: nowrap;
+  }
+  /* The undo ring at the bar's left while a photo waits to go (sendDelay, 2 s) */
+  .yo-phone .ring { position: absolute; left: calc(var(--pw) * 0.05); top: 50%; width: 0.9em; height: 0.9em; margin-top: -0.45em; transform: rotate(-90deg); }
+  .yo-phone .ring circle { fill: none; stroke: #fff; stroke-width: 3; stroke-dasharray: 57; animation: yp-ring 2s linear forwards; }
+  @keyframes yp-ring { to { stroke-dashoffset: 57; } }
+
+  /* The "•••" menu, opening upwards from its corner (Invite, Add Group, Settings) */
+  .yo-phone .pop {
+    position: absolute;
+    left: calc(var(--pw) * 0.045);
+    bottom: calc(var(--pw) * 0.2);
+    z-index: 8;
+    width: calc(var(--pw) * 0.62);
+    padding: calc(var(--pw) * 0.015) 0;
+    border-radius: calc(var(--pw) * 0.06);
+    background: rgba(44, 36, 52, 0.92);
+    box-shadow: 0 18px 40px -12px rgba(10, 0, 20, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transform: scale(0.6);
+    transform-origin: 8% 100%;
+    transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+    pointer-events: none;
+  }
+  .yo-phone.menu-open .pop { opacity: 1; transform: none; pointer-events: auto; }
+  .yo-phone .pop button {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(var(--pw) * 0.03) calc(var(--pw) * 0.05);
+    font: 500 calc(var(--pw) * 0.045)/1.1 -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #fff;
+    cursor: pointer;
+  }
+  .yo-phone .pop button:hover { background: rgba(255, 255, 255, 0.08); }
+  .yo-phone .pop svg { width: calc(var(--pw) * 0.06); height: calc(var(--pw) * 0.06); }
+  .yo-phone .pop hr { margin: calc(var(--pw) * 0.012) 0; border: 0; border-top: calc(var(--pw) * 0.018) solid rgba(0, 0, 0, 0.25); }
+
+  /* Add Group: a sheet from the bottom, dark as the app's; a name and the friends in it */
+  .yo-phone .scrim { position: absolute; inset: 0; z-index: 8; background: rgba(0, 0, 0, 0.4); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+  .yo-phone.sheet-open .scrim { opacity: 1; pointer-events: auto; }
+  .yo-phone .sheet {
+    position: absolute;
+    inset: calc(var(--top) + var(--pw) * 0.03) 0 0;
+    z-index: 9;
+    display: flex;
+    flex-direction: column;
+    border-radius: calc(var(--pw) * 0.075) calc(var(--pw) * 0.075) 0 0;
+    background: #1C1C1E;
+    color: #fff;
+    text-align: left;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    transform: translateY(105%);
+    transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
+  }
+  .yo-phone.sheet-open .group-sheet, .yo-phone.picker-open .picker { transform: none; }
+  .yo-phone.picker-open .scrim { opacity: 1; pointer-events: auto; }
+  .yo-phone .sbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: calc(var(--pw) * 0.04); }
+  .yo-phone .sbar b { font: 600 calc(var(--pw) * 0.045)/1 -apple-system, BlinkMacSystemFont, sans-serif; }
+  .yo-phone .sbar button {
+    all: unset;
+    cursor: pointer;
+    font: 600 calc(var(--pw) * 0.042)/1 -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .yo-phone .sbar .sx {
+    justify-self: start;
+    display: grid;
+    place-items: center;
+    width: calc(var(--pw) * 0.09);
+    height: calc(var(--pw) * 0.09);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+    font-size: calc(var(--pw) * 0.036);
+  }
+  .yo-phone .sbar .screate { justify-self: end; color: #C18BDB; }
+  .yo-phone .sbar .screate:disabled { color: rgba(255, 255, 255, 0.3); cursor: default; }
+  .yo-phone .sbody { flex: 1; overflow: auto; scrollbar-width: none; padding: 0 calc(var(--pw) * 0.045) calc(var(--pw) * 0.05); }
+  .yo-phone .gname {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    padding: calc(var(--pw) * 0.035) calc(var(--pw) * 0.04);
+    border-radius: calc(var(--pw) * 0.035);
+    background: #2C2C2E;
+    font: 700 calc(var(--pw) * 0.05)/1.2 'Montserrat', sans-serif;
+    text-transform: uppercase;
+    color: #fff;
+    cursor: text;
+  }
+  .yo-phone .gname::placeholder { color: rgba(255, 255, 255, 0.35); text-transform: none; font-weight: 500; }
+  .yo-phone .shead { margin: calc(var(--pw) * 0.05) calc(var(--pw) * 0.04) calc(var(--pw) * 0.015); font-size: calc(var(--pw) * 0.032); text-transform: uppercase; opacity: 0.55; }
+  .yo-phone .pick { list-style: none; margin: 0; padding: 0; border-radius: calc(var(--pw) * 0.035); background: #2C2C2E; overflow: hidden; }
+  .yo-phone .pick button {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pw) * 0.03);
+    padding: calc(var(--pw) * 0.03) calc(var(--pw) * 0.04);
+    font: 700 calc(var(--pw) * 0.042)/1.2 'Montserrat', sans-serif;
+    cursor: pointer;
+  }
+  .yo-phone .pick li + li { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08); }
+  .yo-phone .pick .dot { width: calc(var(--pw) * 0.03); height: calc(var(--pw) * 0.03); border-radius: 50%; background: var(--c); flex: none; }
+  .yo-phone .pick .nm { flex: 1; }
+  .yo-phone .pick .ck {
+    width: calc(var(--pw) * 0.05);
+    height: calc(var(--pw) * 0.05);
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.3);
+    display: grid;
+    place-items: center;
+    font-size: calc(var(--pw) * 0.03);
+    color: transparent;
+  }
+  .yo-phone .pick li.on .ck { background: #9B59B6; box-shadow: none; color: #fff; }
+  .yo-phone .sfoot { margin: calc(var(--pw) * 0.015) calc(var(--pw) * 0.04) 0; font-size: calc(var(--pw) * 0.032); opacity: 0.55; }
+
+  /* A push banner drops in from under the Dynamic Island, then goes back up; a tap sends it away */
+  .yo-phone .push {
+    position: absolute;
+    top: calc(var(--pw) * 0.135);
+    left: calc(var(--pw) * 0.035);
+    right: calc(var(--pw) * 0.035);
+    z-index: 7;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pw) * 0.035);
+    padding: calc(var(--pw) * 0.035) calc(var(--pw) * 0.045);
+    border-radius: calc(var(--pw) * 0.075);
+    background: rgba(250, 246, 252, 0.94);
+    color: #24112e;
+    text-align: left;
+    box-shadow: 0 14px 28px -12px rgba(20, 0, 30, 0.7);
+    opacity: 0;
+    transform: translateY(-160%);
+    transition: transform 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.15), opacity 0.3s ease;
+    pointer-events: none;
+    cursor: pointer;
+  }
+  .yo-phone .push.in { opacity: 1; transform: none; pointer-events: auto; }
+  .yo-phone .push > i, .yo-phone .app {
+    flex: none;
+    width: calc(var(--pw) * 0.11);
+    height: calc(var(--pw) * 0.11);
+    border-radius: 24%;
+    display: grid;
+    place-items: center;
+    background: #9B59B6;
+    color: #fff;
+    font: normal 900 calc(var(--pw) * 0.045)/1 'Montserrat', sans-serif;
+  }
+  .yo-phone .push > span { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .yo-phone .push b { font: 800 calc(var(--pw) * 0.046)/1.15 'Montserrat', sans-serif; }
+  .yo-phone .push small { font: 500 calc(var(--pw) * 0.042)/1.15 'Montserrat', sans-serif; }
+  .yo-phone .push time { align-self: flex-start; font: 500 calc(var(--pw) * 0.034)/1.4 -apple-system, BlinkMacSystemFont, sans-serif; opacity: 0.55; }
+
+  /* ---- Sign up: a username and nothing else ---- */
+  .yo-phone .s-signup { background: linear-gradient(180deg, #A766C2 0%, #9B59B6 60%, #8E44AD 100%); }
+  .yo-phone .signup {
+    position: absolute;
+    inset: calc(var(--top) + var(--pw) * 0.16) 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--pw) * 0.04);
+  }
+  .yo-phone .logo { font: 900 calc(var(--pw) * 0.3)/0.9 'Montserrat', sans-serif; text-shadow: 0 4px 0 rgba(60, 10, 90, 0.25); margin-bottom: calc(var(--pw) * 0.06); }
+  .yo-phone .label { font: 700 calc(var(--pw) * 0.04)/1 'Montserrat', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85; }
+  .yo-phone .field {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 76%;
+    height: calc(var(--pw) * 0.18);
+    border-radius: calc(var(--pw) * 0.05);
+    background: #fff;
+    color: #8E44AD;
+    font: 900 calc(var(--pw) * 0.085)/1 'Montserrat', sans-serif;
+    letter-spacing: 0.04em;
+    box-shadow: 0 10px 20px -12px rgba(40, 5, 70, 0.8);
+  }
+  .yo-phone .field i { font-style: normal; opacity: 0; transition: opacity 0.05s; }
+  .yo-phone .field u { width: 2px; height: 46%; margin-left: 3px; background: #8E44AD; animation: yp-blink 1s steps(1) infinite; }
+  .yo-phone .on .field i { opacity: 1; }
+  .yo-phone .on .field i:nth-child(1) { transition-delay: 0.45s; }
+  .yo-phone .on .field i:nth-child(2) { transition-delay: 0.7s; }
+  .yo-phone .on .field i:nth-child(3) { transition-delay: 0.95s; }
+  .yo-phone .nope { display: flex; gap: calc(var(--pw) * 0.025); margin-top: calc(var(--pw) * 0.03); }
+  .yo-phone .nope s {
+    padding: calc(var(--pw) * 0.018) calc(var(--pw) * 0.035);
+    border-radius: 99px;
+    background: rgba(50, 10, 80, 0.25);
+    font: 600 calc(var(--pw) * 0.042)/1.2 'Montserrat', sans-serif;
+    text-decoration-thickness: 1.5px;
+    opacity: 0.8;
+  }
+  .yo-phone .start {
+    position: absolute;
+    inset: auto 0 0;
+    height: var(--bar);
+    display: grid;
+    place-items: center;
+    background: #1ABC9C;
+    font: 700 calc(var(--pw) * 0.06)/1 'Montserrat', sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---- Locked: a sealed Yo on the lock screen ---- */
+  .yo-phone .s-locked { background: radial-gradient(120% 70% at 50% 15%, #8E44AD 0%, #5E2479 55%, #36114A 100%); }
+  .yo-phone .lock { position: absolute; inset: var(--top) 0 0; display: flex; flex-direction: column; align-items: center; }
+  .yo-phone .clock { margin-top: calc(var(--pw) * 0.07); font: 700 calc(var(--pw) * 0.22)/1 'Montserrat', sans-serif; letter-spacing: -0.02em; }
+  .yo-phone .date { margin-top: calc(var(--pw) * 0.02); font: 600 calc(var(--pw) * 0.045)/1 'Montserrat', sans-serif; opacity: 0.8; }
+  .yo-phone .note {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pw) * 0.035);
+    width: 88%;
+    box-sizing: border-box;
+    margin-top: calc(var(--pw) * 0.09);
+    padding: calc(var(--pw) * 0.035);
+    border-radius: calc(var(--pw) * 0.065);
+    background: rgba(255, 255, 255, 0.92);
+    color: #2a1236;
+    box-shadow: 0 12px 24px -12px rgba(20, 0, 30, 0.8);
+    opacity: 0;
+    transform: translateY(-40%) scale(0.96);
+    transition: opacity 0.4s ease 0.25s, transform 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.25s;
+  }
+  .yo-phone .on .note { opacity: 1; transform: none; }
+  .yo-phone .msg { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: left; }
+  .yo-phone .msg b { font: 800 calc(var(--pw) * 0.046)/1.2 'Montserrat', sans-serif; }
+  .yo-phone .msg small { font: 500 calc(var(--pw) * 0.034)/1.2 'Montserrat', sans-serif; opacity: 0.7; }
+  .yo-phone .pad { flex: none; width: calc(var(--pw) * 0.07); color: #8E44AD; }
+  .yo-phone .env {
+    position: relative;
+    margin-top: calc(var(--pw) * 0.13);
+    width: 62%;
+    aspect-ratio: 1.55;
+    border-radius: calc(var(--pw) * 0.03);
+    background: linear-gradient(180deg, #FFF8EA, #F1E4CC);
+    box-shadow: 0 18px 30px -14px rgba(10, 0, 20, 0.9);
+    opacity: 0;
+    transform: translateY(18%) scale(0.85) rotate(-4deg);
+    transition: opacity 0.45s ease 0.55s, transform 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.25) 0.55s;
+  }
+  .yo-phone .on .env { opacity: 1; transform: rotate(-4deg); }
+  .yo-phone .flap {
+    position: absolute;
+    inset: 0 0 38%;
+    background: linear-gradient(180deg, #F6EBD6, #E9D8B9);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+  .yo-phone .seal {
+    position: absolute;
+    left: 50%;
+    top: 62%;
+    width: 30%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle at 35% 30%, #B26CD0, #8E44AD 60%, #6C2C8A);
+    box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.35), 0 4px 8px -2px rgba(40, 5, 70, 0.6);
+    color: #F1C40F;
+    font: 900 calc(var(--pw) * 0.06)/1 'Montserrat', sans-serif;
+  }
+
+  /* ---- Sealed: a Yo sealed in its envelope, then what keeps it so, in three calm lines ---- */
+  .yo-phone .s-code { background: linear-gradient(180deg, #A766C2 0%, #9B59B6 55%, #8E44AD 100%); }
+  .yo-phone .sealed {
+    position: absolute;
+    inset: var(--top) 0 0;
+    padding-bottom: calc(var(--pw) * 0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .yo-phone .sealed .env { margin-top: 0; width: 66%; }
+  .yo-phone .facts {
+    list-style: none;
+    margin: calc(var(--pw) * 0.17) 0 0;
+    padding: 0;
+    display: grid;
+    gap: calc(var(--pw) * 0.055);
+    text-align: left;
+    font: 700 calc(var(--pw) * 0.056)/1.2 'Montserrat', sans-serif;
+  }
+  .yo-phone .facts li {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--pw) * 0.035);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .yo-phone .on .facts li { opacity: 1; transform: none; }
+  .yo-phone .on .facts li:nth-child(1) { transition-delay: 0.5s; }
+  .yo-phone .on .facts li:nth-child(2) { transition-delay: 0.65s; }
+  .yo-phone .on .facts li:nth-child(3) { transition-delay: 0.8s; }
+  .yo-phone .facts svg { flex: none; width: calc(var(--pw) * 0.065); height: calc(var(--pw) * 0.065); color: #F1C40F; }
+  .yo-phone .facts span { display: flex; flex-direction: column; gap: 2px; }
+  .yo-phone .facts a { color: #fff; font-weight: 500; font-size: 0.78em; opacity: 0.85; text-decoration-color: #F1C40F; text-underline-offset: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .yo-phone *, .yo-phone *::before, .yo-phone *::after { transition: none !important; animation: none !important; }
+  }
+</style>

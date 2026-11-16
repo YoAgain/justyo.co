@@ -1,0 +1,162 @@
+---
+// "How Yo works": the app's phone (the hero's YoPhone) beside the three steps, about one window high, nothing pinned.
+// Hovering, focusing or clicking a step turns the phone's screen into it; nothing changes by itself. With each change the phone tips a
+// little and settles, as if turned to the next screen. Reduced motion: no tipping. On a phone: the phone on top, the steps
+// under it.
+import YoPhone from '../mockups/yo-phone/YoPhone.astro';
+
+const steps = [
+  { screen: 'signup', title: 'Pick a username.' },
+  { screen: 'list', title: 'Tap to send Yo.' },
+  { screen: 'code', title: 'Yo-to-Yo encrypted.' },
+] as const;
+const first = 1; // "Tap to send Yo.": the list first
+---
+<section class="how" aria-labelledby="how-title" data-step={first + 1}>
+  <div class="inner">
+    <div class="tiltbox">
+      <YoPhone screens={['list', 'signup', 'locked', 'code']} screen={steps[first].screen} class="how-phone" />
+    </div>
+    <div class="side">
+      <h2 id="how-title">How Yo works</h2>
+      <ol class="steps">
+        {steps.map((s, i) => (
+          <li class:list={{ on: i === first }} data-screen={s.screen}>
+            <button type="button" aria-pressed={i === first ? 'true' : 'false'}>
+              <span class="num">{i + 1}</span>
+              <b>{s.title}</b>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { getYoPhone } from '../mockups/yo-phone/yo-phone';
+
+  const section = document.querySelector<HTMLElement>('.how');
+  const own = getYoPhone(section?.querySelector('[data-yo-phone]') ?? null);
+  if (section && own) {
+    // On the home page the hero's phone travels down into this place (index.astro, "the journey"): then the steps
+    // turn and tip that one, and this section's own phone only holds the place.
+    const traveller = () => document.querySelector<HTMLElement>('.journey-on .traveller');
+    const phone = () => getYoPhone(traveller()?.querySelector('[data-yo-phone]') ?? null) ?? own;
+    const box = () => traveller()?.querySelector<HTMLElement>('.spin') ?? section.querySelector<HTMLElement>('.tiltbox')!;
+    const items = [...section.querySelectorAll<HTMLLIElement>('.steps li')];
+    const rests = [2.5, 0, -2.5]; // each step's own slight tilt (the list, shown first, upright)
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let current = items.findIndex((li) => li.classList.contains('on'));
+    box().style.transform = `rotate(${rests[current]}deg)`;
+
+    const show = (i: number) => {
+      if (i === current) return;
+      const before = rests[current];
+      current = i;
+      section.dataset.step = String(i + 1);
+      own.show(items[i].dataset.screen!);
+      phone().show(items[i].dataset.screen!);
+      items.forEach((li, j) => {
+        li.classList.toggle('on', j === i);
+        li.querySelector('button')!.setAttribute('aria-pressed', String(j === i));
+      });
+      const b = box();
+      b.style.transform = `rotate(${rests[i]}deg)`;
+      if (!still) {
+        // The phone tips past its new tilt, lifts a little and springs back: flat (2D), so the phone never shows that it
+        // has no depth.
+        const dir = i > items.findIndex((li) => li.classList.contains('was')) ? -1 : 1;
+        b.animate(
+          [
+            { transform: `translateY(0) rotate(${before}deg) scale(1)`, easing: 'cubic-bezier(0.3, 0.6, 0.4, 1)' },
+            { transform: `translateY(-2px) rotate(${rests[i] + dir * 1}deg) scale(0.993)`, offset: 0.45, easing: 'cubic-bezier(0.3, 1.4, 0.5, 1)' },
+            { transform: `translateY(0) rotate(${rests[i]}deg) scale(1)` },
+          ],
+          { duration: 520 },
+        );
+      }
+      items.forEach((li, j) => li.classList.toggle('was', j === i));
+    };
+    items[current]?.classList.add('was');
+
+    // A pointer over a step shows it (with a mouse); a click or a tap does too.
+    items.forEach((li, i) => {
+      const b = li.querySelector('button')!;
+      b.addEventListener('click', () => show(i));
+      b.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') show(i); });
+      b.addEventListener('focus', () => show(i));
+    });
+  }
+</script>
+
+<style>
+  .how { padding: clamp(48px, 8vw, 96px) 16px; }
+  @media (min-width: 800px) {
+    /* a full window: How Yo works has the screen to itself before Security comes */
+    .how { min-height: min(100vh, 860px); min-height: min(100svh, 860px); box-sizing: border-box; display: flex; align-items: center; }
+    .inner { width: 100%; }
+  }
+  .inner {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+  }
+  .inner :global(.how-phone) { --w: clamp(220px, 62vw, 260px); }
+  .tiltbox { will-change: transform; backface-visibility: hidden; }
+  /* The hero's phone has travelled here: this one only holds its place, upright, so it can be measured */
+  :global(.journey-on) .tiltbox { visibility: hidden; transform: none !important; }
+
+  .side { width: 100%; max-width: 26rem; }
+  h2 {
+    margin: 0 0 18px;
+    font: 900 clamp(2rem, 6.5vw, 3.2rem)/1.05 'Montserrat', sans-serif;
+    letter-spacing: -0.01em;
+    text-align: center;
+    text-shadow: 0 4px 0 rgba(60, 10, 90, 0.2);
+  }
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .steps button {
+    all: unset;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 18px;
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+  }
+  .steps button:hover { opacity: 0.85; }
+  .steps button:focus-visible { outline: 2px solid #F1C40F; outline-offset: 2px; }
+  .steps .on button { opacity: 1; background: rgba(255, 255, 255, 0.12); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18); }
+  .num {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+    font: 900 15px/1 'Montserrat', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .on .num { background: linear-gradient(180deg, #FFE36E, #F1C40F); color: #8E44AD; box-shadow: inset 0 -2px 0 rgba(150, 100, 0, 0.35); }
+  .steps b { font: 900 clamp(1.15rem, 4.6vw, 1.45rem)/1.15 'Montserrat', sans-serif; letter-spacing: -0.005em; }
+
+
+  /* A wide screen: the phone left, the title and the steps right of it, the whole about one window high */
+  @media (min-width: 800px) {
+    .inner { flex-direction: row; justify-content: center; gap: clamp(48px, 8vw, 112px); }
+    .inner :global(.how-phone) { --w: clamp(230px, calc((100vh - 200px) / 2.18), 290px); }
+    h2 { text-align: left; padding-left: 14px; margin-bottom: 22px; }
+  }
+</style>

@@ -1,0 +1,39 @@
+---
+// Who owns Yo and who runs it, with the operator's address: one box, the same on the imprint and the privacy policy
+// (the facts from src/data/legal.ts).
+import { operator, owner } from '../data/legal';
+---
+<div class="who">
+  <p class="lead"><strong>Yo belongs to {owner.name}.</strong> The app, its name, its look and the {owner.domain} domain are
+    his. {operator.name} ({operator.project}) only runs the app, its server and this site, with {owner.name}'s blessing.</p>
+  <div class="cards">
+    <section aria-label="Owner">
+      <h3>Owner</h3>
+      <b>{owner.name}</b>
+      <p>Creator of Yo, first published in {owner.since} by {owner.company}. Owns Yo, the Yo name, its look and the
+        {owner.domain} domain.</p>
+    </section>
+    <section aria-label="Operator">
+      <h3>Operator</h3>
+      <b>{operator.name}</b>
+      <p>{operator.project} project. Runs the Yo app, its server and this site, with {owner.name}'s blessing. Owns none of it.</p>
+      <address>
+        {operator.address.map((line) => <>{line}<br /></>)}
+        {operator.country}<br />
+        <a href={`mailto:${operator.email}`}>{operator.email}</a>
+      </address>
+    </section>
+  </div>
+</div>
+<style>
+  .who { margin: 24px 0 8px; }
+  .lead { margin: 0 0 22px; font-size: 19px; }
+  .cards { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  section { border: 2px solid rgba(255, 255, 255, 0.55); border-radius: 14px; padding: 18px 20px; }
+  h3 { margin: 0 0 2px; font: 700 13px/1.4 'Montserrat', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85; }
+  b { display: block; margin: 0 0 8px; font: 700 22px/1.3 'Montserrat', sans-serif; }
+  p { margin: 0; }
+  address { margin-top: 12px; font-style: normal; line-height: 1.6; }
+  a { color: #fff; }
+  @media (min-width: 620px) { .cards { grid-template-columns: 1fr 1fr; } }
+</style>

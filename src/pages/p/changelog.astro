@@ -1,0 +1,141 @@
+---
+// The changelog at /p/changelog, in the home page's manner: the title, then a timeline grouped by year, a "Yo" bubble on the line per entry and a card beside it
+// (date, title, the first lines, an image if the entry has one); every card links to its own page (/p/changelog/<slug>).
+// Under the timeline, Yo's old blog on Medium with its newest three posts.
+// Entries: src/content/changelog/.
+import Footer from '../../components/Footer.astro';
+import Head from '../../components/Head.astro';
+import Header from '../../components/Header.astro';
+import media from '../../data/media.json';
+import { entries, excerpt, iso, short } from '../../lib/changelog';
+
+const all = await entries();
+// Yo's old blog on Medium: the newest three posts, under the timeline.
+const posts = [...media.blog.posts].reverse().slice(0, 3);
+const fmt = (d: string) => new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+const groups: { year: string; items: typeof all }[] = [];
+for (const e of all) {
+  const y = String(e.data.date.getUTCFullYear());
+  if (groups.at(-1)?.year !== y) groups.push({ year: y, items: [] });
+  groups.at(-1)!.items.push(e);
+}
+const description =
+  "What's new in Yo: every change to the app as it ships, newest first, and the posts from Yo's blog on Medium, 2015 to 2018.";
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <Head title="Yo – What's new" description={description} path="/p/changelog" />
+    <style>
+      html, body { margin: 0; background: #9B59B6; color: #fff; }
+      body { font: 16px/1.5 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
+      main { max-width: 1000px; margin: 0 auto; padding: 96px 20px 24px; min-height: 100vh; min-height: 100svh; box-sizing: border-box; display: flex; flex-direction: column; }
+      .intro { margin-bottom: 48px; text-align: center; }
+      h1 { margin: 0; font: 900 clamp(3.4rem, 12vw, 6rem)/0.95 'Montserrat', sans-serif; letter-spacing: -0.02em; text-shadow: 0 6px 0 rgba(60, 10, 90, 0.22); }
+      .split { width: 100%; max-width: 760px; margin: 0 auto; }
+      /* Yo's old blog: its own widget under the timeline, the blog left, the newest three posts right */
+      .medium { margin: 72px auto 0; width: 100%; max-width: 760px; box-sizing: border-box; display: grid; grid-template-columns: 1fr; gap: 14px; padding: 22px;
+        border-radius: 26px; background: rgba(50, 10, 80, 0.2); box-shadow: inset 0 2px 6px rgba(40, 5, 70, 0.25), 0 1px 0 rgba(255, 255, 255, 0.2); }
+      .mhead { display: flex; align-items: center; gap: 16px; color: #fff; text-decoration: none; }
+      .mhead:hover b { text-decoration: underline; text-underline-offset: 4px; }
+      .bm { flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: #fff; color: #1b1022; font: 900 26px/1 Georgia, serif; }
+      .mhead b { display: block; font: 900 1.1rem/1.3 'Montserrat', sans-serif; }
+      .bs { font: 500 13px/1.4 'Montserrat', sans-serif; opacity: 0.8; }
+      .posts { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+      .posts li { margin: 0; }
+      .posts a { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-radius: 16px; color: #fff; text-decoration: none; background: rgba(255, 255, 255, 0.12); }
+      .posts a:hover { background: rgba(255, 255, 255, 0.2); }
+      .d { font: 600 12px/1.3 'Montserrat', sans-serif; opacity: 0.7; }
+      .pt { font: 700 15px/1.3 'Montserrat', sans-serif; }
+      .mhead:focus-visible, .posts a:focus-visible { outline: 2px solid #F1C40F; outline-offset: 2px; }
+      @media (min-width: 760px) { .medium { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); align-items: center; gap: 24px; } }
+
+      section { position: relative; padding-left: 76px; padding-bottom: 8px; padding-top: 62px; }
+      section:first-child { padding-top: 8px; }
+      /* the line, down through every year */
+      section::before {
+        content: ""; position: absolute; left: 28px; top: 0; bottom: 0; width: 2px;
+        background: rgba(255, 255, 255, 0.35);
+      }
+      section:last-child::before { bottom: 40px; }
+      h2 {
+        position: relative; margin: 0 0 42px; font: 900 clamp(2rem, 6.5vw, 3.2rem)/1 'Montserrat', sans-serif; text-shadow: 0 4px 0 rgba(60, 10, 90, 0.2);
+      }
+      /* where a year begins, the line writes a little "yo" */
+      h2::before {
+        content: ""; position: absolute; left: -61px; top: calc(50% - 30px); width: 48px; height: 60px; background-color: #9B59B6;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='60' viewBox='0 0 48 60' fill='none' stroke='rgba(255,255,255,0.35)' stroke-width='2' stroke-linecap='butt' stroke-linejoin='round'%3E%3Cpath d='M14 0 L14 6 C14 10 8 9 7 13 C6 18 9 22 13 22 C17 22 19 18 19 13 L19 30 C19 38 12 39 11 34 C10 29 19 24 27 20 C27 16 30 14 33 14 C37 14 39 17 39 20 C39 24 36 26 33 26 C29 26 27 23 27 20 M33 14 C38 13 43 12 44 15 C46 22 38 33 26 37 C19 39 14 41 14 47 L14 60'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; background-size: contain;
+      }
+      ol { list-style: none; margin: 0; padding: 0; }
+      li { position: relative; margin: 0 0 42px; }
+      /* each entry's mark on the line */
+      .bubble {
+        position: absolute; left: -66px; top: 50%; translate: 0 -50%; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+        color: #8E44AD; background: #fff; box-shadow: 0 6px 14px -6px rgba(40, 5, 70, 0.7); font: 900 14px/1 'Montserrat', sans-serif;
+      }
+      section:first-child li:first-child .bubble { background: linear-gradient(180deg, #FFE36E, #F1C40F); }
+
+      /* the card: image (if any), date, title, the first lines; the whole card links to the post */
+      a.card {
+        display: flex; gap: 24px; align-items: center; padding: 24px 28px; border-radius: 26px; color: #fff; text-decoration: none;
+        background: linear-gradient(165deg, #AE7BC8 0%, #9C5DB8 55%, #8B45A8 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 12px 24px -16px rgba(55, 12, 85, 0.7);
+        transition: transform 0.15s;
+      }
+      a.card.pic { padding: 16px 28px 16px 16px; }
+      a.card:hover { transform: translateY(-1px); }
+      a.card:focus-visible { outline: 2px solid #F1C40F; outline-offset: 2px; }
+      a.card img { flex: none; width: 128px; height: 96px; object-fit: cover; border-radius: 14px; }
+      .c { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+      .row { display: flex; align-items: baseline; gap: 12px; }
+      .row strong { flex: 1; min-width: 0; }
+      time { flex: none; font: 600 12.5px/1.3 'Montserrat', sans-serif; opacity: 0.7; }
+      strong { font: 900 1.2rem/1.25 'Montserrat', sans-serif; }
+      .p { font: 500 14.5px/1.45 'Montserrat', sans-serif; opacity: 0.85;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+      @media (prefers-reduced-motion: reduce) { a.card { transition: none; } }
+    </style>
+  </head>
+  <body>
+    <Header current="/p/changelog" />
+    <main>
+      <div class="intro">
+        <h1>What’s new.</h1>
+      </div>
+      <div class="split">
+        {groups.map((g) => (
+          <section>
+            <h2>{g.year}</h2>
+            <ol>
+              {g.items.map((e) => (
+                <li id={e.slug}>
+                  <span class="bubble" aria-hidden="true">Yo</span>
+                  <a class={e.data.image ? 'card pic' : 'card'} href={`/p/changelog/${e.slug}`}>
+                    {e.data.image && <img src={e.data.image} alt="" width="112" height="84" loading="lazy" decoding="async" />}
+                    <span class="c">
+                      <span class="row"><strong>{e.data.title}</strong><time datetime={iso(e.data.date)}>{short(e.data.date)}</time></span>
+                      {excerpt(e.body) && <span class="p">{excerpt(e.body)}</span>}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))}
+      </div>
+      <aside class="medium" aria-labelledby="blog-title">
+        <a class="mhead" href={media.blog.url} rel="noopener" target="_blank">
+          <span class="bm" aria-hidden="true">M</span>
+          <span><b id="blog-title">Yo’s blog on Medium</b><span class="bs">The posts from 2015 to 2018 ↗</span></span>
+        </a>
+        <ul class="posts">
+          {posts.map((p) => (
+            <li><a href={p.url} rel="noopener" target="_blank"><span class="d">{fmt(p.date)}</span><span class="pt">{p.title}</span></a></li>
+          ))}
+        </ul>
+      </aside>
+      <Footer />
+    </main>
+  </body>
+</html>

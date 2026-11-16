@@ -1,0 +1,40 @@
+---
+// Imprint (Impressum): who provides this site (§ 5 DDG) and who is responsible for its content (§ 18 Abs. 2 MStV).
+// Who owns Yo and who operates it comes from src/data/legal.ts, as on the privacy page.
+import Footer from '../../components/Footer.astro';
+import Head from '../../components/Head.astro';
+import Header from '../../components/Header.astro';
+import WhoRunsYo from '../../components/WhoRunsYo.astro';
+import { lastUpdated } from '../../data/legal';
+const description =
+  "Imprint of justyo.co: who owns Yo, who operates the Yo app and this site, and how to reach us.";
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <Head title="Yo – Imprint" description={description} path="/p/imprint" />
+    <style>
+      html, body { margin: 0; background: #9B59B6; color: #fff; }
+      body { font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      main { max-width: 680px; margin: 0 auto; padding: 84px 20px 24px; min-height: 100vh; min-height: 100svh; box-sizing: border-box; display: flex; flex-direction: column; }
+      h1 { font-family: 'Montserrat', sans-serif; font-size: 44px; margin: 0 0 4px; }
+      a { color: #fff; }
+      .muted { opacity: 0.8; }
+      .note { margin-top: 14px; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <Header />
+    <main>
+      <h1><a href="/" style="text-decoration:none">Yo</a> – Imprint</h1>
+      <p class="muted">Last updated: {lastUpdated.imprint}</p>
+
+      <WhoRunsYo />
+
+      <p class="muted note">Provider under Section 5 DDG and responsible for content under Section 18(2) MStV.
+        <a href="/p/privacy">Privacy policy</a></p>
+
+      <Footer />
+    </main>
+  </body>
+</html>
