@@ -12,6 +12,37 @@ const yo = (text: string) =>
   </div>
   <p class="intro">Everything below is specified in full in the
     <a href="https://github.com/YoAgain/yo/blob/main/spec/v1.md">Yo over IP spec</a>, next to the open source code.</p>
+  <div class="groups account">
+    <div>
+      <h3>Account</h3>
+      <p>Secured with its own key pair.</p>
+      <ul>
+        <li>Secret key only on your devices; synced via iCloud Keychain (end-to-end encrypted)</li>
+        <li>Same key = your Signal identity (safety numbers)</li>
+        <li>Each device has its own key and signs its requests; the server holds only public keys</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Account Sync</h3>
+      <ul>
+        <li>Contacts, groups, settings stored on the server, encrypted with a key derived from the account key (HKDF)</li>
+        <li>Yos, photos, videos not synced</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Backup (with Security set up)</h3>
+      <ul>
+        <li>Sealed on your iPhone: random key K seals account key + account data; the server stores only the sealed blob and can't read it</li>
+        <li>K wrapped by the recovery key (64 chars) and, if added, the passkey (PRF, Face ID)</li>
+        <li>Fetch needs an auth key derived from either</li>
+        <li>No Security set up: no backup; iCloud Keychain is the only way back</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Why the key is stored as-is</h3>
+      <p>A wrapping key would sit in the same keychain; synced keychain items can't be bound to Face ID.</p>
+    </div>
+  </div>
   <div class="groups">
     <div>
       <h3 set:html={yo("Encryption")} />
@@ -24,7 +55,7 @@ const yo = (text: string) =>
       <h3 set:html={yo("Metadata")} />
       <ul>
         <li>Sealed sender: Signal's, with a sender certificate</li>
-        <li>Server sees: inbox + size bucket</li>
+        <li>Server sees: inbox, size bucket, time, IP address</li>
         <li>Padding: 1 / 4 / 16 / 64 KiB</li>
         <li>Sealed only for contacts (access key), limited by address</li>
         <li>Anonymous requests: separate connections</li>
@@ -43,20 +74,14 @@ const yo = (text: string) =>
       <h3 set:html={yo("On your iPhone")} />
       <ul>
         <li>Local state encrypted, key in the Keychain</li>
+        <li>Names in the list: iOS file protection</li>
       </ul>
     </div>
     <div>
       <h3 set:html={yo("Photos & videos")} />
       <ul>
         <li>Own random key per photo / video</li>
-        <li>Limited fetches, deleted after viewing</li>
-      </ul>
-    </div>
-    <div>
-      <h3 set:html={yo("Backup")} />
-      <ul>
-        <li>Encrypted on your iPhone: passkey or 12 words</li>
-        <li>Server stores it, can't read it</li>
+        <li>Limited fetches, deleted from the server once fetched (at most 30 days)</li>
       </ul>
     </div>
     <div>
@@ -78,12 +103,13 @@ const yo = (text: string) =>
       <h3 set:html={yo("Not there yet")} />
       <ul>
         <li>Key transparency (until then: compare safety numbers)</li>
+        <li>Private contact discovery: the server sees who looks up whom</li>
         <li>TLS pinning, on purpose: keys are server-signed instead</li>
       </ul>
     </div>
   </div>
   <p class="after">Found a security problem? Write to <a href={`mailto:${operator.email}`}>{operator.email}</a>.
-    <span class="muted">Last updated: November 15, 2026</span></p>
+    <span class="muted">Last updated: November 17, 2026</span></p>
 </dialog>
 <script>
   // A click on the dim backdrop (outside the box) closes the pop-up.
@@ -125,6 +151,9 @@ const yo = (text: string) =>
     background: rgba(255, 255, 255, 0.12); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16); }
   h3 { margin: 0 0 6px; font: 800 0.95rem/1.2 'Montserrat', sans-serif; color: #F1C40F; }
   h3 :global(b) { font-weight: 900; }
+  .groups p { margin: 0 0 4px; }
+  .account { padding-bottom: 0; }
+  .account + .groups { padding-top: 14px; }
   .groups ul { margin: 0; padding: 0; list-style: none; }
   .groups li { position: relative; margin: 4px 0; padding-left: 14px; }
   .groups li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: rgba(255, 255, 255, 0.6); }

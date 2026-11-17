@@ -1,12 +1,42 @@
 ---
-// Privacy policy for the Yo app and its hub (what the hub and the app actually keep: yo/spec/v1.md).
 import Footer from '../../components/Footer.astro';
 import Head from '../../components/Head.astro';
 import Header from '../../components/Header.astro';
 import WhoRunsYo from '../../components/WhoRunsYo.astro';
-import { operator, services, lastUpdated } from '../../data/legal';
-const description =
-  "Yo's privacy policy: what the Yo app and its server keep about you, what they cannot see, the services Yo uses and your rights under the GDPR.";
+import { operator, owner, services, lastUpdated } from '../../data/legal';
+const description = 'Yo privacy: data, purposes, retention, providers and your rights.';
+// The services, split: the ones behind the app and the Yo Hub, and the ones behind this website.
+const roles: Record<string, string> = {
+  Hetzner: 'runs the Yo Hub · Germany',
+  Cloudflare: 'connection to the Yo Hub, sees IPs · International',
+  Apple: 'push, TestFlight, App Store · International',
+  GitHub: 'hosts this site, IP addresses in its logs · USA · legitimate interest',
+  YouTube: 'Story videos, only after you click one · International',
+};
+const appServices = services.filter((x) => ['Hetzner', 'Cloudflare', 'Apple'].includes(x.name));
+const siteServices = services.filter((x) => ['GitHub', 'YouTube'].includes(x.name));
+// Where the app's data is: on the Yo Hub (Yo's server), or only on your iPhone. Each row: what it is, how long it is kept, and (on the
+// server) the legal basis. 🔒 marks what is encrypted (we cannot read it).
+type Row = [name: string, what: string, kept: string, law?: string];
+const server: Row[] = [
+  ['User id & keys', 'name, push token', 'until deletion (unsecured: 1 idle year)', 'b'],
+  ['🔒 Backup & settings', 'to restore', 'until deletion', 'b'],
+  ['🔒 Waiting Yos', 'photos, videos', 'max. 30 days', 'b'],
+];
+// the small print: support, and keeping Yo safe and working
+const serverMinor: Row[] = [
+  ['Feedback', 'only if you send it', 'until handled', 'b'],
+  ['IP address', 'against abuse', 'memory only', 'f'],
+  ['Request & upload limits', 'per account', '2 days', 'f'],
+  ['Crash reports', 'anonymous · off in Settings', 'max. 1 year', 'f'],
+];
+const law: Record<string, string> = { b: 'needed for Yo', f: 'legitimate interest' };
+const phone: Row[] = [
+  ['🔒 Keys & friends', 'your account', 'until sign-out'],
+  ['🔒 Passkey & recovery key', 'only yours', 'until deletion'],
+  ['🔒 iCloud Keychain', 'restores your account', 'until deletion'],
+  ['Photos & videos', 'not in backups', 'seen once'],
+];
 ---
 <!doctype html>
 <html lang="en">
@@ -14,102 +44,85 @@ const description =
     <Head title="Yo – Privacy" description={description} path="/p/privacy" />
     <style>
       html, body { margin: 0; background: #9B59B6; color: #fff; }
-      body { font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      body { font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
       main { max-width: 680px; margin: 0 auto; padding: 84px 20px 24px; min-height: 100vh; min-height: 100svh; box-sizing: border-box; display: flex; flex-direction: column; }
-      h1, h2 { font-family: 'Montserrat', sans-serif; }
-      h1 { font-size: 44px; margin: 0 0 4px; }
-      h2 { font-size: 22px; margin: 36px 0 8px; }
-      a { color: #fff; }
-      .muted { opacity: 0.8; }
-      ul { padding-left: 1.2em; }
+      h1, h2, h3 { font-family: 'Montserrat', sans-serif; }
+      h1 { font-size: 36px; margin: 0 0 4px; }
+      h2 { font-size: 20px; margin: 26px 0 8px; }
+      h3 { font-size: 14px; margin: 0 0 4px; }
+      p { margin: 6px 0; }
+      a { color: inherit; text-underline-offset: 3px; }
+      .muted { opacity: .8; font-size: 14px; }
+      address { font-style: normal; }
+      .t { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; background: rgba(255,255,255,.08); border-radius: 14px; font-size: 15px; line-height: 1.4; margin: 4px 0 6px; overflow: hidden; }
+      .t td { padding: 10px 12px; text-align: left; vertical-align: middle; }
+      .t tr + tr td { border-top: 1px solid rgba(255,255,255,.1); }
+      .t .n { font-weight: 600; white-space: nowrap; }
+      .t .d { font-size: 14px; opacity: .75; }
+      .t .n { width: 30%; }
+      .t .d span { white-space: nowrap; }
+      .law { opacity: .7; }
+      /* the small print under the main rows: smaller and quieter */
+      .t.minor { margin-top: 10px; font-size: 13.5px; background: rgba(255,255,255,.05); }
+      .t.minor td { padding: 7px 12px; }
+      .t.minor .n { font-weight: 500; opacity: .9; }
+      .t.minor .d { font-size: 13px; }
+      .note { margin: 6px 0 0; font-size: 13px; opacity: .7; }
+      @media (max-width: 600px) {
+        .t, .t tbody { display: block; }
+        .t tr { display: block; padding: 10px 14px; }
+        .t tr + tr { border-top: 1px solid rgba(255,255,255,.1); }
+        .t td, .t tr + tr td { border: 0; padding: 0; }
+        .t td { display: block; }
+        .t .n { white-space: normal; width: auto; }
+        .t .d { margin-top: 2px; }
+      }
+      @media (max-width: 540px) {
+        h1 { font-size: 30px; }
+        h2 { font-size: 18px; }
+      }
     </style>
   </head>
   <body>
     <Header />
     <main>
       <h1><a href="/" style="text-decoration:none">Yo</a> – Privacy</h1>
-      <p class="muted">Last updated: {lastUpdated.privacy}</p>
-
-      <p>Yo is built to know as little about you as possible. Today you sign up with just a name; Yo does not ask for
-        your phone number, e‑mail address or address book. Messages are end-to-end encrypted on your iPhone; our server cannot read them.</p>
+      <p class="muted">Updated: {lastUpdated.privacy}</p>
 
       <h2>Who runs Yo</h2>
       <WhoRunsYo />
       <p>The operator takes care of your data under this policy and answers for it.</p>
 
-      <h2>What our server keeps</h2>
-      <ul>
-        <li><strong>Your name</strong> (the username you choose) and a random user id, so friends can find you.</li>
-        <li><strong>Public keys</strong> of your account and your iPhone, so friends can encrypt for you and the
-          server can check that requests come from your device.</li>
-        <li><strong>Messages waiting for delivery</strong>, end-to-end encrypted. The server cannot read them and
-          deletes them once your iPhone has received them, at the latest after 30 days.</li>
-        <li><strong>Photos and videos waiting to be fetched</strong>, end-to-end encrypted with a key only you and
-          your friend have, along with a random id, your user id, the size, how many devices still have to fetch it and
-          when it came. It is deleted as soon as the last device has fetched it, at the latest after 30 days, and when
-          you delete your account. It is not in our backups. We see neither the picture nor who receives it.</li>
-        <li><strong>Feedback you send from the app</strong>: its text, your user id, the app version and when. This
-          is not end-to-end encrypted: we read it, to make Yo better. It is kept until we have dealt with it; if you
-          delete your account first, it is kept without your user id.</li>
-        <li><strong>Crash reports</strong>, only if you allow it (Yo asks after its first crash; Settings › Help
-          Improve Yo turns it on or off): the app version, the iOS version, the iPhone model, the kind of crash and where in
-          the app's code it happened. They hold no Yos, names or photos, are sent without your account or user id and
-          are not linked to you. We keep them until we have fixed the crash, at the latest for one year.</li>
-        <li><strong>Who asks whom</strong>, for a contact request: a Yo to someone who has not said yes to you yet goes
-          with your user id, so the server can limit how many requests one account sends (a few per person and day).
-          Once they say yes, your Yos to them go sealed again and the server no longer sees that they are from you. The
-          daily counts are kept for two days.</li>
-        <li><strong>A daily count</strong> of the photos and videos you send and their size, to keep the server from
-          filling up; kept for two days.</li>
-        <li><strong>An encrypted backup</strong> of your account, if you secure it with a passkey or recovery key.
-          It is locked with keys only you have; we cannot open it, and we hand it out only to someone who proves to have
-          your passkey or recovery key.</li>
-        <li><strong>Your encrypted settings</strong>: your friends list, the people you blocked and your app icon,
-          locked with your account's key so that a new iPhone gets them back. We cannot open them; we see only roughly
-          how large they are (in steps of 1, 4, 16 or 60 KiB) and when they change. They are deleted with your account.</li>
-        <li><strong>A push token</strong> of your iPhone, so Apple can wake Yo when a Yo arrives.</li>
-        <li><strong>The app version</strong> your iPhone last used (for example "ios/202611140619"), so we can tell an
-          app that is too old to update.</li>
-        <li><strong>Your IP address</strong>, briefly, to limit abuse (for example how many accounts one address may
-          create per hour). It is kept in memory only and not stored.</li>
-      </ul>
-      <p>A name that is not secured is deleted, with its account, after 365 days without using Yo.</p>
-      <p>We keep this data to run Yo for you (Art. 6(1)(b) GDPR) and, for IP addresses and contact requests, to
-        protect Yo against abuse (our legitimate interest, Art. 6(1)(f) GDPR). Crash reports only with your consent
-        (Art. 6(1)(a) GDPR), which you can withdraw in Settings at any time.</p>
+      <h2 id="server">Yo Hub server</h2>
+      <table class="t">
+        <tbody>{server.map(([n, w, k, l]) => <tr><td class="n">{n}</td><td class="d"><span>{w}</span> · <span>{k}</span>{l && <> · <span class="law">{law[l]}</span></>}</td></tr>)}</tbody>
+      </table>
+      <table class="t minor">
+        <tbody>{serverMinor.map(([n, w, k, l]) => <tr><td class="n">{n}</td><td class="d"><span>{w}</span> · <span>{k}</span>{l && <> · <span class="law">{law[l]}</span></>}</td></tr>)}</tbody>
+      </table>
+      <p class="note">🔒 encrypted, we can’t read it · GDPR: needed for Yo = Art. 6(1)(b), legitimate interest = Art. 6(1)(f)</p>
 
-      <h2>What we cannot see</h2>
-      <ul>
-        <li>The content of your Yos and of the photos and videos that come with them.</li>
-        <li>Your passkey, your recovery key, or anything that opens your backup.</li>
-      </ul>
+      <h2 id="iphone">On your iPhone</h2>
+      <table class="t">
+        <tbody>{phone.map(([n, w, k, l]) => <tr><td class="n">{n}</td><td class="d"><span>{w}</span> · <span>{k}</span>{l && <> · <span class="law">{law[l]}</span></>}</td></tr>)}</tbody>
+      </table>
 
-      <h2>On your iPhone</h2>
-      <p>Your account's keys and your recovery key stay on your iPhone, in its protected storage, as does your friends
-        list (besides its encrypted copy on our server). Signing out removes them from the iPhone. While a new
-        account is being created, its key waits in the iPhone's keychain until the server has taken the name. A photo or video you receive can be seen once and is then deleted
-        from your iPhone; until then it is kept out of backups.</p>
-      <p>So that you get your account back after reinstalling Yo or on a new iPhone with the same Apple Account, Yo also
-        keeps your username, user id, account key and, if you set one up, your recovery key in your iCloud Keychain,
-        end-to-end encrypted by Apple. Neither we nor our server receive it. With iCloud Keychain off, it stays on that
-        iPhone. Signing out marks it as signed out, so that Sign In can offer it again; deleting your account removes
-        it.</p>
+      <h2 id="services">Services for the app</h2>
+      <table class="t">
+        <tbody>{appServices.map((x) => <tr><td class="n"><a href={x.url}>{x.name}</a></td><td class="d">{roles[x.name]}</td></tr>)}</tbody>
+      </table>
 
-      <h2>Services we use</h2>
-      <ul>
-        {services.map((x) => <li><strong>{x.name}</strong>{x.where && ` (${x.where})`} {x.what}</li>)}
-      </ul>
-      <p>This website's fonts come from justyo.co itself; it loads nothing from Google Fonts.</p>
-      <p>Yo currently uses no advertising, analytics or tracking, and we do not sell your data.</p>
+      <h2 id="website">This website</h2>
+      <table class="t">
+        <tbody>
+          {siteServices.map((x) => <tr><td class="n"><a href={x.url}>{x.name}</a></td><td class="d">{roles[x.name]}</td></tr>)}
+          <tr><td class="n">Cookies &amp; analytics</td><td class="d">none</td></tr>
+        </tbody>
+      </table>
 
       <h2>Your rights</h2>
-      <p>Under the GDPR you may ask what we store about you, have it corrected or deleted, restrict or object to its
-        processing, and take it with you. Write to <a href={`mailto:${operator.email}`}>{operator.email}</a>. You may also
-        complain to a data protection authority.</p>
-
-      <h2>Changes</h2>
-      <p>If Yo starts to keep something new, this page says so before it does.</p>
-
+      <p>Access, correction, deletion, restriction, portability and objection: <a href={`mailto:${operator.email}`}>{operator.email}</a>.</p>
+      <p>Complain to a supervisory authority, including <a href="https://www.ldi.nrw.de/kontakt/ihre-beschwerde">LDI NRW</a>.</p>
       <Footer />
     </main>
   </body>
