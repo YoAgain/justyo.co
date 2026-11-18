@@ -10,8 +10,8 @@
 //
 // Props
 // The camera (bottom right) opens the app's camera mode: the bars see-through over a picture, a tap on a name
-// "takes" a photo and sends it ("Sent 📷", the undo ring for 2 s; no camera is used); "✕" or Escape closes it. "•••"
-// opens the app's menu (Invite, Add Group, Settings); Add Group is a sheet with a name and the friends to pick, and
+// "takes" a photo and sends it ("Sent 📷", the undo ring for 2 s; no camera is used); "✕" or Escape closes it. The
+// "Yo" button (bottom left, the app's settings button) opens a menu (Invite, Add Group, Settings); Add Group is a sheet with a name and the friends to pick, and
 // Create puts the group's bar on top, a group as the others.
 //
 //   names        the bars, top to bottom: a friend's name, or a group { group: 'FAMILY', members: ['MOM', …] } (default
@@ -31,12 +31,12 @@
 //                and this describes it (default: a description of the screen)
 //   id           an id for the phone's element
 //
-// What it does, after the iOS app (FriendList.swift): a tap says "Sent Yo" on the bar, one "!" for each further tap,
-// at most five, then " +n"; 1.5 s after the last tap the bar says its name again and goes on top. A Yo arriving says
-// "Yo" at the bar's end ("Yo!!" for three), stands 3 s, its "!"s go one by one, it fades out by 5 s; the bar goes on
+// What it does, after the iOS app (FriendList.swift): a tap clicks and the bar says "Sent Yo!", then "Sent 2× Yo!";
+// 1.5 s after the last tap the bar says its name again and goes on top. A Yo arriving plays the Yo sound and the bar
+// says "Yo from MIA" ("2× Yo from MIA") in the name's place, stands 3 s and fades out by 5 s; the bar goes on
 // top (a delete and an insert: its place fades, the bars above slide down, it comes in from the top). A group's bar
-// has the app's group sign before its name; a Yo to it goes to all, and its members' Yos come in as lines under the
-// name ("MOM: Yo!!"), the bar growing by one bar for each. "+" opens the name field: a name typed (the app's rules)
+// carries a "#" before its name ("#FAMILY"); a Yo to it goes to all, and its members' Yos come in as lines under the
+// name ("MOM: 2× Yo"), the bar growing by one bar for each. "+" opens the name field: a name typed (the app's rules)
 // is added on top in the next colour; Escape or a tap elsewhere closes it. Nothing leaves the page.
 
 export type Screen = 'list' | 'signup' | 'locked' | 'code';
@@ -111,10 +111,8 @@ const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55
                 data-members={group?.members.join(',')}>
                 <span class="head" role={interactive ? 'button' : undefined} tabindex={interactive ? 0 : undefined}>
                   <span class="words">
-                    {group && <svg class="gsign" viewBox="0 0 30 20" aria-hidden="true"><circle cx="15" cy="5.2" r="4.2"/><path d="M7.6 19.2c0-4.6 3.3-7.6 7.4-7.6s7.4 3 7.4 7.6z"/><circle cx="6" cy="7" r="3.3"/><path d="M0 19.2c0-3.8 2.5-6.2 5.8-6.2 1.2 0 2.3.3 3.1.9-1.9 1.4-3.1 3.0-3.1 5.3z"/><circle cx="24" cy="7" r="3.3"/><path d="M30 19.2c0-3.8-2.5-6.2-5.8-6.2-1.2 0-2.3.3-3.1.9 1.9 1.4 3.1 3.0 3.1 5.3z"/></svg>}
-                    <span class="text">{name}</span><span class="tail"></span>
+                    <span class="text">{group ? `#${name}` : name}</span>
                   </span>
-                  <span class="end"></span>
                 </span>
                 {group && <span class="lines"></span>}
               </li>
@@ -128,7 +126,7 @@ const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55
         </div>
         <span class="flash"></span>
         <span class="camhint" aria-hidden="true">Tap a name · Hold for video</span>
-        <button type="button" class="fab menu" aria-label="More" aria-haspopup="menu" aria-expanded="false"><i></i><i></i><i></i></button>
+        <button type="button" class="fab menu" aria-label="More" aria-haspopup="menu" aria-expanded="false"><span class="yo-glyph" aria-hidden="true">Y<span>o</span></span></button>
         <button type="button" class="fab lib" aria-label="Photo Library" aria-haspopup="dialog" inert><img class="thumb" alt="" /><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="1.8" fill="currentColor"/><path d="m4 18 5-5 3 3 3-3.5 5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
         <button type="button" class="zoom" aria-label="Zoom 1×" inert>1×</button>
         <button type="button" class="fab flip" aria-label="Switch Camera" inert><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 9A8 8 0 0 0 5.2 7.2M4.5 15a8 8 0 0 0 14.3 1.8M5 3.5v4h4M19 20.5v-4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -337,16 +335,7 @@ const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55
   .yo-phone .bars::-webkit-scrollbar { display: none; }
   .yo-phone .head { position: relative; height: var(--bar); display: grid; place-items: center; }
   /* A group: the app's sign (person.3.fill) before its name, outside it, so the name stays in the middle */
-  .yo-phone .gsign {
-    position: absolute;
-    right: 100%;
-    top: 50%;
-    width: 1.05em;
-    height: 0.7em;
-    margin: -0.36em 0.32em 0 0;
-    fill: currentColor;
-  }
-  /* A group's Yos, by whom: a line each under the name, as tall as a bar ("MOM: Yo!!") */
+  /* A group's Yos, by whom: a line each under the name, as tall as a bar ("MOM: 2× Yo"); a bar's Yo under "Sent Yo!" the same */
   .yo-phone .lines { display: block; }
   .yo-phone .gline { height: var(--bar); display: grid; place-items: center; transition: opacity 2s ease; }
   .yo-phone .gline.fresh { animation: yp-line 0.35s ease-out; }
@@ -371,30 +360,16 @@ const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55
   .yo-phone .bars li { background: var(--c); transition: background-color 0.3s ease; }
   .yo-phone[data-interactive] .bars li { cursor: pointer; }
   .yo-phone .bars li.ghost { position: absolute; left: 0; right: 0; z-index: 0; pointer-events: none; }
-  /* Sent: the words in the middle, their "!"s and " +n" hanging after them, so nothing shifts as they come */
+  /* The bar's words in the middle: the name, "Sent 2× Yo!" or "Yo from MIA"; new words come in fresh, a Yo knocks */
   .yo-phone .words { position: relative; }
   .yo-phone .words.fresh { animation: yp-words 0.2s ease-out; }
-  .yo-phone .tail { position: absolute; left: 100%; top: 0; display: flex; white-space: pre; }
-  .yo-phone .tail b, .yo-phone .end b { font-weight: inherit; display: inline-block; animation: yp-bang 0.16s ease-out; }
-  .yo-phone .plus { font-variant-numeric: tabular-nums; white-space: pre; }
-  /* Received: the name stays, "Yo" and its "!"s at the bar's end; it knocks as a run starts, fades as it ends */
-  .yo-phone .end {
-    position: absolute;
-    right: calc(var(--pw) * 0.06);
-    top: 50%;
-    display: flex;
-    margin-top: -0.5em;
-    font-weight: 900;
-    transition: opacity 2s ease;
-  }
-  .yo-phone .end:empty { display: none; }
-  .yo-phone .end.knock { animation: yp-knock 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.4); }
-  .yo-phone .end.fading { opacity: 0; }
+  .yo-phone .words.knock, .yo-phone .gline.knock { animation: yp-knock 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.4); }
+  /* the Yos fade out (only then: back, the name is there at once) */
+  .yo-phone .words.fading, .yo-phone .gline.fading { opacity: 0; transition: opacity 2s ease; }
   /* "+" open: a name field for a moment */
   .yo-phone .add .text { font-size: calc(var(--pw) * 0.1); }
   .yo-phone .add.adding .head { display: block; }
   @keyframes yp-words { from { opacity: 0; transform: scale(0.94); } }
-  @keyframes yp-bang { from { opacity: 0; transform: translateX(0.45em); } }
   @keyframes yp-knock { 0% { opacity: 0; transform: translateX(0.6em); } 60% { transform: translateX(-0.08em); } }
   @keyframes yp-blink { 50% { opacity: 0; } }
 
@@ -403,7 +378,7 @@ const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55
   /* The keyboard's focus: a white ring on the control, inside the edge where the screen would cut it off. */
   .yo-phone .screen button:focus-visible, .yo-phone .screen .head[tabindex]:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
   .yo-phone .screen .fab:focus-visible, .yo-phone .screen .zoom:focus-visible { outline-offset: 2px; }
-  .yo-phone .fab { /* "•••" and the camera, in glass, at the bottom corners */
+  .yo-phone .fab { /* the "Yo" button and the camera, in glass, at the bottom corners */
     position: absolute;
     bottom: calc(var(--pw) * 0.045);
     z-index: 2;
@@ -419,7 +394,9 @@ const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55
   }
   .yo-phone[data-interactive] .fab.menu, .yo-phone[data-interactive] .fab.cam { cursor: pointer; }
   .yo-phone .menu { left: calc(var(--pw) * 0.045); }
-  .yo-phone .menu i { width: calc(var(--pw) * 0.014); height: calc(var(--pw) * 0.014); border-radius: 50%; background: #fff; }
+  /* the app's settings button: Y and o drawn apart, the o smaller, tucked under the Y's right arm (FriendList.settingsButton) */
+  .yo-phone .yo-glyph { display: flex; align-items: baseline; font: 900 calc(var(--pw) * 0.074)/1 'Montserrat', sans-serif; color: #fff; }
+  .yo-phone .yo-glyph span { font-size: 0.8em; margin-left: -0.17em; }
   .yo-phone .cam { right: calc(var(--pw) * 0.045); }
   .yo-phone .fab svg { width: 52%; height: 52%; }
   .yo-phone .cam .i-x { position: absolute; width: 40%; height: 40%; }
@@ -511,7 +488,7 @@ const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55
   .yo-phone .ring circle { fill: none; stroke: #fff; stroke-width: 3; stroke-dasharray: 57; animation: yp-ring 2s linear forwards; }
   @keyframes yp-ring { to { stroke-dashoffset: 57; } }
 
-  /* The "•••" menu, opening upwards from its corner (Invite, Add Group, Settings) */
+  /* The "Yo" button's menu, opening upwards from its corner (Invite, Add Group, Settings) */
   .yo-phone .pop {
     position: absolute;
     left: calc(var(--pw) * 0.045);

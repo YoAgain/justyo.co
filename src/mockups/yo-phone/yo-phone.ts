@@ -1,14 +1,15 @@
 // What a YoPhone (YoPhone.astro beside this file) does, after the iOS app (yo/app/ios, FriendList.swift):
 //
-// - A tap on a name: the sound, and the bar says "Sent Yo", one "!" for each tap after the first, each coming in on its
-//   own, at most five, then " +n" (ShareBridge.bangs, Bangs); the count moves on at most every 0.2 s. 1.5 s after the
-//   last tap the bar says its name again and goes on top (showSent, thenOnTop).
+// - A tap on a name: a click (the Yo sound is for Yos that arrive), and the bar says "Sent Yo!", then "Sent 2× Yo!",
+//   "Sent 3× Yo!" (YoWords.sent); the count moves on at most every 0.2 s. 1.5 s after the last tap the bar says its
+//   name again and goes on top (showSent, thenOnTop).
 // - Every friend you Yo Yos back, 1.2 to 3 s after your Yo went, the replies to several friends staggered so they come
-//   one after another: the sound, "Yo" at the bar's end, which knocks as it comes, and the bar goes on top (Inbox.show,
-//   applyArrivals, land, rise). A friend has one reply on its way at most: more taps before it came do not add or
-//   delay one. The "Yo" stands 3 s, its "!"s go one by one, and it fades out by 5 s (yoSolidSeconds, yoSeconds).
+//   one after another: the Yo sound, the bar says "Yo from MIA" ("2× Yo from MIA") in the name's place, knocking as
+//   it comes, and goes on top (receivedRow, rise). Still saying "Sent Yo!", the bar grows a second line for it. A
+//   friend has one reply on its way at most: more taps before it came do not add or delay one. The Yo stands 3 s and
+//   fades out by 5 s (yoSolidSeconds, yoSeconds); then the name again.
 //   While you are still tapping, the list does not move (rise waits for `sending`).
-// - A group's bar: a Yo goes to all its members; one of them Yos back, a line under the group's name ("MOM: Yo!!",
+// - A group's bar: a Yo goes to all its members; one of them Yos back, a line under the group's name ("MOM: 2× Yo",
 //   SenderBlocks), the bar growing by a bar's height for it; the lines go as a friend's "Yo" does, then the bar
 //   shrinks back.
 // - Going on top is a delete and an insert, as the app's list does it: the bar's place fades, the bars above slide
@@ -19,7 +20,7 @@
 //   would not know: "No Such User", and the field shakes. Escape or a tap elsewhere closes it. Nothing leaves the
 //   page; a reload starts again.
 // - Camera mode (the camera button): the bars see-through over a picture, a tap "sends a photo" (the shutter's click
-//   when it takes one from the live picture, "Sent 📷", the undo ring for 2 s, then as a send); "✕" or Escape closes it. No camera is used. "•••": Invite, Add Group, Settings;
+//   when it takes one from the live picture, "Sent 📷", the undo ring for 2 s, then as a send); "✕" or Escape closes it. No camera is used. the "Yo" button: Invite, Add Group, Settings;
 //   Add Group is the app's sheet (a name, the friends to pick, Create) and puts the group's bar on top.
 // - autoplay: now and then a Yo arrives by itself while the phone is in view; silent until the visitor has made a Yo.
 // - banner: an arriving Yo also drops the app's notification in ("Yo", "From MIA", "From LEO @ FAMILY") (the app shows none while open; for pages that want it).
@@ -32,7 +33,6 @@ import { heard, playClick, playShutter, playYo } from '../../lib/yo-sound';
 const SENT_SECONDS = 1.5;
 const YO_SOLID_SECONDS = 3;
 const YO_SECONDS = 5;
-const MOST_BANGS = 5;
 // A friend Yos back between these many seconds after your Yo went; replies to several friends come at least
 // REPLY_GAP_SECONDS apart (and up to 0.7 s more).
 const REPLY_SECONDS = [1.2, 3];
@@ -43,25 +43,9 @@ const wait = (ms: number) => new Promise((ok) => setTimeout(ok, ms));
 const ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
 const pick = <T>(list: T[]) => list[Math.floor(Math.random() * list.length)];
 
-/** One "!" for each Yo after the first, at most five, and how many more there are. */
-function bangs(count: number) {
-  const wanted = Math.max(0, count - 1);
-  const shown = Math.min(wanted, MOST_BANGS);
-  return { shown, more: wanted - shown };
-}
-
-/** Make el's "!"s and " +n" say count: only the difference changes, so each new "!" comes in on its own. */
-function drawBangs(el: HTMLElement, count: number) {
-  const { shown, more } = bangs(count);
-  const marks = [...el.querySelectorAll(':scope > b')];
-  let plus = el.querySelector<HTMLElement>(':scope > .plus');
-  for (let i = marks.length; i < shown; i++) el.insertBefore(Object.assign(document.createElement('b'), { textContent: '!' }), plus);
-  for (let i = marks.length; i > shown; i--) marks[i - 1].remove();
-  if (more > 0) {
-    if (!plus) el.append((plus = Object.assign(document.createElement('span'), { className: 'plus' })));
-    plus.textContent = ` +${more}`;
-  } else plus?.remove();
-}
+/** How Yos are counted on a bar (YoWords): "Yo", "3× Yo"; sent: "Sent Yo!", "Sent 3× Yo!". */
+const yoWords = (count: number) => (count <= 1 ? 'Yo' : `${count}× Yo`);
+const sentWords = (count: number) => (count <= 1 ? 'Sent Yo!' : `Sent ${count}× Yo!`);
 
 // ---- Usernames, as the core takes them (yo_core::handle: canonical, check_username_form, skeleton) ----
 
@@ -93,10 +77,13 @@ type Bar = {
   members?: string[];
   text: HTMLElement;
   words: HTMLElement;
-  tail: HTMLElement;
-  end: HTMLElement;
   lines?: HTMLElement;
+  second?: HTMLElement; // the received line under "Sent Yo!", while both are on the bar
   sent: number; // taps in this run
+  shown: number; // the taps the bar says (it moves on at most every 0.2 s)
+  sentWords: string; // 'yo' while it says "Sent Yo!", "Sent 📷", or '' when it says no send
+  said: string; // what kind of words the bar says now: 'sent', 'got' or 'name'
+  fading: boolean; // the Yos on it are fading out
   sentTimer: number;
   tick: number;
   nextTick: number;
@@ -105,9 +92,8 @@ type Bar = {
   gotRun: number; // to tell a run's timers from the next one's
 };
 
-/** A friend's bar, as YoPhone.astro draws one. */
-const GROUP_SIGN =
-  '<svg class="gsign" viewBox="0 0 30 20" aria-hidden="true"><circle cx="15" cy="5.2" r="4.2"/><path d="M7.6 19.2c0-4.6 3.3-7.6 7.4-7.6s7.4 3 7.4 7.6z"/><circle cx="6" cy="7" r="3.3"/><path d="M0 19.2c0-3.8 2.5-6.2 5.8-6.2 1.2 0 2.3.3 3.1.9-1.9 1.4-3.1 3.0-3.1 5.3z"/><circle cx="24" cy="7" r="3.3"/><path d="M30 19.2c0-3.8-2.5-6.2-5.8-6.2-1.2 0-2.3.3-3.1.9 1.9 1.4 3.1 3.0 3.1 5.3z"/></svg>';
+// A group's name carries a "#" ("#FAMILY"), in the name's own type (usernames cannot hold "#").
+const shownName = (name: string, members?: string[]) => (members ? `#${name}` : name);
 
 function barElement(name: string, color: number, members?: string[]) {
   const li = document.createElement('li');
@@ -116,9 +102,9 @@ function barElement(name: string, color: number, members?: string[]) {
   if (members) li.dataset.members = members.join(',');
   li.style.setProperty('--c', ROWS[color]);
   li.innerHTML =
-    `<span class="head" role="button" tabindex="0"><span class="words">${members ? GROUP_SIGN : ''}<span class="text"></span><span class="tail"></span></span><span class="end"></span></span>` +
+    `<span class="head" role="button" tabindex="0"><span class="words"><span class="text"></span></span></span>` +
     (members ? '<span class="lines"></span>' : '');
-  li.querySelector('.text')!.textContent = name;
+  li.querySelector('.text')!.textContent = shownName(name, members);
   return li;
 }
 
@@ -240,10 +226,9 @@ export class YoPhone {
       members: li.dataset.members?.split(',').filter(Boolean),
       text: li.querySelector('.text')!,
       words: li.querySelector('.words')!,
-      tail: li.querySelector('.tail')!,
-      end: li.querySelector('.end')!,
       lines: li.querySelector<HTMLElement>('.lines') ?? undefined,
-      sent: 0, sentTimer: 0, tick: 0, nextTick: 0, back: 0, got: 0, gotRun: 0,
+      sent: 0, shown: 0, sentWords: '', said: 'name', fading: false,
+      sentTimer: 0, tick: 0, nextTick: 0, back: 0, got: 0, gotRun: 0,
     };
     this.bars.set(li, bar);
     return bar;
@@ -269,9 +254,41 @@ export class YoPhone {
 
   private say(bar: Bar, text: string) {
     bar.text.textContent = text;
-    bar.words.classList.remove('fresh');
-    void bar.words.offsetWidth;
-    bar.words.classList.add('fresh');
+    this.animate(bar.words, 'fresh');
+  }
+
+  private animate(el: HTMLElement, name: string) {
+    el.classList.remove('fresh', 'knock');
+    void el.offsetWidth;
+    el.classList.add(name);
+  }
+
+  /**
+   * What the bar says now, as the app's bar words: what you sent ("Sent 2× Yo!") or what came in ("Yo from MIA") in
+   * the name's place, the name otherwise; both at once, the sent words on top and the received line under them (the
+   * bar a bar's height taller). A count moving on swaps in place; other words come in fresh (`come`: or knocking).
+   */
+  private render(bar: Bar, come = 'fresh') {
+    const sent = bar.sentWords === 'yo' ? sentWords(bar.shown) : bar.sentWords;
+    const got = !bar.members && bar.got > 0 ? `${yoWords(bar.got)} from ${bar.name}` : '';
+    const said = sent ? 'sent' : got ? 'got' : 'name';
+    bar.text.textContent = sent || got || shownName(bar.name, bar.members);
+    if (said !== bar.said) this.animate(bar.words, said === 'got' ? come : 'fresh');
+    bar.said = said;
+    bar.words.classList.toggle('fading', bar.fading && said === 'got');
+    if (sent && got) {
+      if (!bar.second) {
+        const line = Object.assign(document.createElement('span'), { className: 'gline fresh' });
+        this.grow(bar, () => bar.li.append(line));
+        bar.second = line;
+      }
+      bar.second.textContent = got;
+      bar.second.classList.toggle('fading', bar.fading);
+    } else if (bar.second) {
+      const line = bar.second;
+      bar.second = undefined;
+      this.grow(bar, () => line.remove());
+    }
   }
 
   private send(bar: Bar, user: boolean, photo = false) {
@@ -281,13 +298,20 @@ export class YoPhone {
       navigator.vibrate?.(30);
     }
     if (photo) return this.sendPhoto(bar);
-    if (!bar.sent) this.say(bar, 'Sent Yo');
     bar.sent += 1;
-    clearTimeout(bar.tick);
-    bar.tick = window.setTimeout(() => {
-      drawBangs(bar.tail, bar.sent);
+    if (bar.sentWords !== 'yo') {
+      bar.sentWords = 'yo';
+      bar.shown = 1;
       bar.nextTick = performance.now() + 200;
-    }, Math.max(0, bar.nextTick - performance.now()));
+      this.render(bar);
+    } else {
+      clearTimeout(bar.tick);
+      bar.tick = window.setTimeout(() => {
+        bar.shown = bar.sent;
+        this.render(bar);
+        bar.nextTick = performance.now() + 200;
+      }, Math.max(0, bar.nextTick - performance.now()));
+    }
     clearTimeout(bar.sentTimer);
     bar.sentTimer = window.setTimeout(() => this.sentOver(bar, true), SENT_SECONDS * 1000);
     this.replyLater(bar, 0);
@@ -326,10 +350,10 @@ export class YoPhone {
       void flash.offsetWidth;
       flash.classList.add('go');
     }
-    if (!bar.sent) this.say(bar, 'Sent 📷');
     this.unpick(); // a picked photo goes once; then the camera again
     bar.sent += 1;
-    drawBangs(bar.tail, bar.sent);
+    bar.sentWords = 'Sent 📷';
+    this.render(bar);
     const head = bar.li.querySelector('.head')!;
     head.querySelector('.ring')?.remove();
     head.insertAdjacentHTML('afterbegin', '<svg class="ring" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9"/></svg>');
@@ -562,9 +586,10 @@ export class YoPhone {
   private sentOver(bar: Bar, thenOnTop: boolean) {
     clearTimeout(bar.tick);
     bar.sent = 0;
+    bar.shown = 0;
     bar.nextTick = 0;
-    bar.tail.replaceChildren();
-    this.say(bar, bar.name);
+    bar.sentWords = '';
+    this.render(bar);
     if (thenOnTop) this.rise(bar);
   }
 
@@ -581,16 +606,13 @@ export class YoPhone {
     const run = ++bar.gotRun;
     if (bar.lines && member) this.landLine(bar, member);
     else {
-      const knock = bar.got === 0 || bar.end.classList.contains('fading');
-      bar.got = (bar.end.classList.contains('fading') ? 0 : bar.got) + 1;
-      bar.end.classList.remove('fading');
-      if (!bar.end.firstChild) bar.end.append('Yo');
-      drawBangs(bar.end, bar.got);
-      if (knock) {
-        bar.end.classList.remove('knock');
-        void bar.end.offsetWidth;
-        bar.end.classList.add('knock');
-      }
+      // A new run (none on the bar, or the last one fading) knocks as it comes.
+      const knock = bar.got === 0 || bar.fading;
+      bar.got = (bar.fading ? 0 : bar.got) + 1;
+      bar.fading = false;
+      if (knock && !bar.sentWords) bar.said = '';
+      this.render(bar, 'knock');
+      if (knock && bar.second) this.animate(bar.second, 'knock');
     }
     this.rise(bar);
     this.settle(bar, run);
@@ -606,13 +628,11 @@ export class YoPhone {
       line.className = 'gline fresh';
       line.dataset.from = member;
       line.dataset.count = '0';
-      line.innerHTML = '<span class="words"><span class="text"></span><span class="tail"></span></span>';
-      line.querySelector('.text')!.textContent = `${member}: Yo`;
       this.grow(bar, () => lines.append(line!));
     }
     const count = Number(line.dataset.count) + 1;
     line.dataset.count = String(count);
-    drawBangs(line.querySelector('.tail')!, count);
+    line.textContent = `${member}: ${yoWords(count)}`;
     bar.got += 1;
   }
 
@@ -635,19 +655,11 @@ export class YoPhone {
     else lines.replaceChildren();
   }
 
-  /** The Yos stand, then their "!"s go one by one (faster the more there are), then they fade out. */
+  /** The Yos stand 3 s, then fade out by 5 s; then the group's lines go (the bar shrinks back) or the name is back. */
   private async settle(bar: Bar, run: number) {
     await wait(YO_SOLID_SECONDS * 1000);
+    if (bar.gotRun !== run) return;
     if (bar.lines?.childElementCount) {
-      const lines = [...bar.lines.children] as HTMLElement[];
-      for (const line of lines) {
-        while (bar.gotRun === run && Number(line.dataset.count) > 1) {
-          line.dataset.count = String(Number(line.dataset.count) - 1);
-          drawBangs(line.querySelector('.tail')!, Number(line.dataset.count));
-          await wait(150);
-        }
-      }
-      if (bar.gotRun !== run) return;
       bar.lines.classList.add('fading');
       await wait((YO_SECONDS - YO_SOLID_SECONDS) * 1000);
       if (bar.gotRun !== run) return;
@@ -655,19 +667,13 @@ export class YoPhone {
       this.dropLines(bar); // the lines go and the bar shrinks back
       return;
     }
-    const step = Math.min(200, 2000 / Math.max(1, bar.got));
-    while (bar.gotRun === run && bar.got > 1) {
-      bar.got -= 1;
-      drawBangs(bar.end, bar.got);
-      await wait(step);
-    }
-    if (bar.gotRun !== run) return;
-    bar.end.classList.add('fading');
+    bar.fading = true;
+    this.render(bar);
     await wait((YO_SECONDS - YO_SOLID_SECONDS) * 1000);
     if (bar.gotRun !== run) return;
     bar.got = 0;
-    bar.end.classList.remove('fading', 'knock');
-    bar.end.replaceChildren();
+    bar.fading = false;
+    this.render(bar);
   }
 
   private banner(from: string) {
