@@ -64,6 +64,35 @@ export function playYo({ overlap = false, user = true } = {}) {
 let shutterNoise: AudioBuffer | null = null;
 
 /**
+ * A soft tap click for a Yo you send in the phone mockup (as in the app, only a Yo that arrives makes the Yo sound):
+ * a few milliseconds of band-passed noise, made here with Web Audio (no file); without Web Audio it stays silent.
+ * It counts as a tap, so Yos that come back afterwards may play their sound.
+ */
+export function playClick() {
+  tapped = true;
+  load();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+  const at = ctx.currentTime;
+  const noise = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * 0.012), ctx.sampleRate);
+  const samples = noise.getChannelData(0);
+  for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
+  const source = ctx.createBufferSource();
+  source.buffer = noise;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = 2200;
+  filter.Q.value = 1.4;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.exponentialRampToValueAtTime(0.35, at + 0.001);
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.012);
+  source.connect(filter).connect(gain).connect(ctx.destination);
+  source.start(at);
+  source.stop(at + 0.015);
+}
+
+/**
  * A camera's shutter, made here with Web Audio (no file): two short clicks 40 ms apart, each a burst of white noise
  * through a band-pass filter with a quick attack and decay, quietly under the Yo sound. It plays only from a tap (a
  * user gesture), on the same AudioContext as the Yo sound; without Web Audio it stays silent.

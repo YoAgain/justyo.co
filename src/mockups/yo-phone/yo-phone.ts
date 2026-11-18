@@ -27,7 +27,7 @@
 //
 // Every phone on the page is its own: initYoPhones() starts each once; getYoPhone(el) returns one to drive it.
 
-import { heard, playShutter, playYo } from '../../lib/yo-sound';
+import { heard, playClick, playShutter, playYo } from '../../lib/yo-sound';
 
 const SENT_SECONDS = 1.5;
 const YO_SOLID_SECONDS = 3;
@@ -276,7 +276,8 @@ export class YoPhone {
 
   private send(bar: Bar, user: boolean, photo = false) {
     if (user) {
-      playYo();
+      // Sending only clicks; the Yo sound is for Yos that arrive (as in the app).
+      playClick();
       navigator.vibrate?.(30);
     }
     if (photo) return this.sendPhoto(bar);
