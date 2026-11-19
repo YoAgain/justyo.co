@@ -60,12 +60,13 @@ import Head from '../components/Head.astro';
       const TESTFLIGHT = 'https://testflight.apple.com/join/V3wa1DeX';
       const $ = (id: string) => document.getElementById(id)!;
 
-      // A username (spec 3.3): 3 to 16 characters of letters, digits, _ and emoji, in one path part.
+      // A username (spec 3.3): up to 16 characters of letters, digits, _ and emoji, in one path part. The least is the
+      // hub's (new names from 3); names from before stay, so their invite links work.
       let part = '';
       try { part = decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, '')); } catch {}
       // Characters are counted as graphemes where the browser has Intl.Segmenter, else as code points.
       const count = 'Segmenter' in Intl ? [...new Intl.Segmenter().segment(part)].length : Array.from(part).length;
-      if (count >= 3 && count <= 16 && /^[\p{L}\p{M}\p{N}_\p{Extended_Pictographic}\p{Emoji_Component}\u200d]+$/u.test(part)) {
+      if (count >= 1 && count <= 16 && /^[\p{L}\p{M}\p{N}_\p{Extended_Pictographic}\p{Emoji_Component}\u200d]+$/u.test(part)) {
         $('name').textContent = part;
         $('invite').hidden = false;
         $('lost').hidden = true;
