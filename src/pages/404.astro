@@ -1,7 +1,8 @@
 ---
 // Every path the site has no page for lands here (GitHub Pages serves 404.html). justyo.co/NAME is a Yo invite:
-// with Yo installed iOS opens the app for it (apple-app-site-association); without, this page says who invites and
-// how to get Yo. The name is read in the browser only; nothing is sent anywhere.
+// with Yo installed iOS and Android open the app for it (apple-app-site-association, assetlinks.json); where they
+// do not (Safari on this site, a typed link) "Open in Yo" does, with the app's scheme; without Yo, "Get Yo". The name is
+// read in the browser only; nothing is sent anywhere.
 import Head from '../components/Head.astro';
 ---
 <!doctype html>
@@ -11,31 +12,41 @@ import Head from '../components/Head.astro';
     <style>
       html, body { margin: 0; height: 100%; background: #9B59B6; color: #fff; font-family: 'Montserrat', sans-serif; }
       main {
-        min-height: 100%; box-sizing: border-box; padding: 2rem 1rem; display: flex; flex-direction: column;
-        align-items: center; justify-content: center; gap: 1.25rem; text-align: center;
+        min-height: 100%; box-sizing: border-box; padding: 2rem 1rem; display: flex; align-items: center;
+        justify-content: center;
       }
+      .column {
+        width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
+        text-align: center;
+      }
+      .column > div { display: contents; }
       .yo { font-size: clamp(5rem, 24vw, 12rem); line-height: 1; }
       h1 { margin: 0; font-size: clamp(1.5rem, 6vw, 2.5rem); line-height: 1.2; overflow-wrap: anywhere; }
-      p { margin: 0; max-width: 28rem; font-size: 1.05rem; line-height: 1.45; opacity: .9; }
+      p { margin: 0; font-size: 1.05rem; line-height: 1.45; opacity: .9; }
       a.button {
-        display: inline-block; margin-top: .5rem; padding: .9rem 2.2rem; border-radius: 999px; background: #fff;
-        color: #9B59B6; text-decoration: none; font-size: 1.15rem;
+        display: block; box-sizing: border-box; width: 100%; max-width: 20rem; margin-top: .5rem; padding: 1rem 2rem;
+        border-radius: 999px; background: #fff; color: #000; text-decoration: none; font-size: 1.25rem;
       }
       a.plain { color: #fff; opacity: .85; }
+      .soon { opacity: .7; font-size: .95rem; }
       [hidden] { display: none !important; }
     </style>
   </head>
   <body>
     <main>
-      <div class="yo">Yo</div>
-      <div id="invite" hidden>
-        <h1><span id="name"></span> wants to Yo you.</h1>
-        <p style="margin-top:1rem">Get Yo, then open this link again, or add <strong id="name2"></strong> in Yo.</p>
-        <a class="button" href="https://testflight.apple.com/join/V3wa1DeX">Get Yo</a>
-      </div>
-      <div id="lost">
-        <h1>Nothing here.</h1>
-        <p><a class="plain" href="/">justyo.co</a></p>
+      <div class="column">
+        <div class="yo">Yo</div>
+        <div id="invite" hidden>
+          <h1><span id="name"></span> wants to Yo you.</h1>
+          <p>Open it in Yo, or get Yo first.</p>
+          <a class="button" id="open" href="#">Open in Yo</a>
+          <a class="plain" id="get" href="https://testflight.apple.com/join/V3wa1DeX">Get Yo for iPhone</a>
+          <p class="soon" id="android">Yo for Android: soon.</p>
+        </div>
+        <div id="lost">
+          <h1>Nothing here.</h1>
+          <p><a class="plain" href="/">justyo.co</a></p>
+        </div>
       </div>
     </main>
     <script is:inline>
@@ -46,7 +57,13 @@ import Head from '../components/Head.astro';
       const count = 'Segmenter' in Intl ? [...new Intl.Segmenter().segment(part)].length : Array.from(part).length;
       if (count >= 3 && count <= 16 && /^[\p{L}\p{M}\p{N}_\p{Extended_Pictographic}\p{Emoji_Component}\u200d]+$/u.test(part)) {
         document.getElementById('name').textContent = part;
-        document.getElementById('name2').textContent = part;
+        // Universal and App Links do not fire for a link opened inside Safari on its own site, typed or pasted; the
+        // app's own scheme (yo://add/NAME, Info.plist CFBundleURLTypes, the Android intent filter) always does.
+        document.getElementById('open').href = 'yo://add/' + encodeURIComponent(part);
+        const ua = navigator.userAgent;
+        if (/Android/i.test(ua)) document.getElementById('get').hidden = true;
+        else if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1))
+          document.getElementById('android').hidden = true;
         document.getElementById('invite').hidden = false;
         document.getElementById('lost').hidden = true;
         document.title = `${part} wants to Yo you`;
