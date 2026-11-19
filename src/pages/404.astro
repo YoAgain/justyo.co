@@ -1,8 +1,8 @@
 ---
 // Every path the site has no page for lands here (GitHub Pages serves 404.html). justyo.co/NAME is a Yo invite:
 // with Yo installed iOS and Android open the app for it (apple-app-site-association, assetlinks.json); where they
-// do not (Safari on this site, a typed link) "Open in Yo" does, with the app's scheme; without Yo, "Get Yo". The name is
-// read in the browser only; nothing is sent anywhere.
+// do not (Safari on this site, a typed link) "Open in Yo" does, with the app's scheme; without Yo it leads on to
+// TestFlight. The name is read in the browser only; nothing is sent anywhere.
 import Head from '../components/Head.astro';
 ---
 <!doctype html>
@@ -21,7 +21,7 @@ import Head from '../components/Head.astro';
       }
       .column > div { display: contents; }
       .yo { font-size: clamp(5rem, 24vw, 12rem); line-height: 1; }
-      h1 { margin: 0; font-size: clamp(1.5rem, 6vw, 2.5rem); line-height: 1.2; overflow-wrap: anywhere; }
+      h1 { margin: 0; width: 100%; text-align: center; font-size: clamp(1.5rem, 6vw, 2.5rem); line-height: 1.2; overflow-wrap: anywhere; }
       p { margin: 0; font-size: 1.05rem; line-height: 1.45; opacity: .9; }
       a.button {
         display: block; box-sizing: border-box; width: 100%; max-width: 20rem; margin-top: .5rem; padding: 1rem 2rem;
@@ -29,6 +29,9 @@ import Head from '../components/Head.astro';
       }
       a.plain { color: #fff; opacity: .85; }
       .soon { opacity: .7; font-size: .95rem; }
+      #qr { display: flex; flex-direction: column; align-items: center; gap: .75rem; }
+      #qrcode { width: 12rem; height: 12rem; background: #fff; border-radius: 1rem; overflow: hidden; }
+      #qrcode svg { display: block; width: 100%; height: 100%; }
       [hidden] { display: none !important; }
     </style>
   </head>
@@ -38,10 +41,12 @@ import Head from '../components/Head.astro';
         <div class="yo">Yo</div>
         <div id="invite" hidden>
           <h1><span id="name"></span> wants to Yo you.</h1>
-          <p>Open it in Yo, or get Yo first.</p>
           <a class="button" id="open" href="#">Open in Yo</a>
-          <a class="plain" id="get" href="https://testflight.apple.com/join/V3wa1DeX">Get Yo for iPhone</a>
-          <p class="soon" id="android">Yo for Android: soon.</p>
+          <p class="soon" id="android" hidden>Yo for Android: soon.</p>
+          <div id="qr" hidden>
+            <div id="qrcode"></div>
+            <p class="soon">Scan with your iPhone to open it in Yo.</p>
+          </div>
         </div>
         <div id="lost">
           <h1>Nothing here.</h1>
@@ -49,24 +54,54 @@ import Head from '../components/Head.astro';
         </div>
       </div>
     </main>
-    <script is:inline>
+    <script>
+      import qrcode from 'qrcode-generator';
+
+      const TESTFLIGHT = 'https://testflight.apple.com/join/V3wa1DeX';
+      const $ = (id: string) => document.getElementById(id)!;
+
       // A username (spec 3.3): 3 to 16 characters of letters, digits, _ and emoji, in one path part.
       let part = '';
       try { part = decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, '')); } catch {}
       // Characters are counted as graphemes where the browser has Intl.Segmenter, else as code points.
       const count = 'Segmenter' in Intl ? [...new Intl.Segmenter().segment(part)].length : Array.from(part).length;
       if (count >= 3 && count <= 16 && /^[\p{L}\p{M}\p{N}_\p{Extended_Pictographic}\p{Emoji_Component}\u200d]+$/u.test(part)) {
-        document.getElementById('name').textContent = part;
-        // Universal and App Links do not fire for a link opened inside Safari on its own site, typed or pasted; the
-        // app's own scheme (yo://NAME, Info.plist CFBundleURLTypes, the Android intent filter) always does.
-        document.getElementById('open').href = 'yo://' + encodeURIComponent(part);
-        const ua = navigator.userAgent;
-        if (/Android/i.test(ua)) document.getElementById('get').hidden = true;
-        else if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1))
-          document.getElementById('android').hidden = true;
-        document.getElementById('invite').hidden = false;
-        document.getElementById('lost').hidden = true;
+        $('name').textContent = part;
+        $('invite').hidden = false;
+        $('lost').hidden = true;
         document.title = `${part} wants to Yo you`;
+
+        const ua = navigator.userAgent;
+        const android = /Android/i.test(ua);
+        const iphone = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+        const open = $('open') as HTMLAnchorElement;
+        open.href = 'yo://' + encodeURIComponent(part);
+
+        // Universal and App Links do not fire for a link opened inside Safari on its own site, typed or pasted; the
+        // app's own scheme (yo://NAME: Info.plist CFBundleURLTypes, the Android intent filter) does. If the page is
+        // still in front 1.5 s later, Yo is not installed: iPhone goes to TestFlight, Android says soon. A computer
+        // has no Yo: it shows this page's address as a QR code for the phone.
+        open.addEventListener('click', (event) => {
+          if (!iphone && !android) {
+            event.preventDefault();
+            const code = qrcode(0, 'M');
+            code.addData(location.href.split('#')[0]);
+            code.make();
+            $('qrcode').innerHTML = code.createSvgTag({ cellSize: 6, margin: 3, scalable: true });
+            $('qr').hidden = false;
+            return;
+          }
+          let timer = 0;
+          const cancel = () => { clearTimeout(timer); document.removeEventListener('visibilitychange', cancel); };
+          timer = window.setTimeout(() => {
+            cancel();
+            if (document.hidden) return;
+            if (iphone) location.href = TESTFLIGHT;
+            else $('android').hidden = false;
+          }, 1500);
+          document.addEventListener('visibilitychange', () => { if (document.hidden) cancel(); });
+          window.addEventListener('pagehide', cancel, { once: true });
+        });
       }
     </script>
   </body>

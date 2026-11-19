@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@fontsource/montserrat": "^5.3.0",
-    "astro": "^6.4.7"
+    "astro": "^6.4.7",
+    "qrcode-generator": "^2.0.4"
   }
 }
