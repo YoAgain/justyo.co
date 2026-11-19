@@ -58,8 +58,8 @@ import Head from '../components/Head.astro';
       if (count >= 3 && count <= 16 && /^[\p{L}\p{M}\p{N}_\p{Extended_Pictographic}\p{Emoji_Component}\u200d]+$/u.test(part)) {
         document.getElementById('name').textContent = part;
         // Universal and App Links do not fire for a link opened inside Safari on its own site, typed or pasted; the
-        // app's own scheme (yo://add/NAME, Info.plist CFBundleURLTypes, the Android intent filter) always does.
-        document.getElementById('open').href = 'yo://add/' + encodeURIComponent(part);
+        // app's own scheme (yo://NAME, Info.plist CFBundleURLTypes, the Android intent filter) always does.
+        document.getElementById('open').href = 'yo://' + encodeURIComponent(part);
         const ua = navigator.userAgent;
         if (/Android/i.test(ua)) document.getElementById('get').hidden = true;
         else if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1))
