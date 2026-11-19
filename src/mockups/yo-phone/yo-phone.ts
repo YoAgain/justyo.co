@@ -1,17 +1,22 @@
-// What a YoPhone (YoPhone.astro beside this file) does, after the iOS app (yo/app/ios, FriendList.swift):
+// What a YoPhone (YoPhone.astro beside this file) does, after the iOS app (yo/app/ios, FriendList.swift) and the
+// core's list rules (yo/core/product: list.rs, line.rs):
 //
+// - Every bar stays one bar high and tells the newest: your own send or the Yos that came after it; when those are
+//   over, its name again (never the older send).
 // - A tap on a name: a click (the Yo sound is for Yos that arrive), and the bar says "Sent Yo!", then "Sent 2× Yo!",
 //   "Sent 3× Yo!" (YoWords.sent); the count moves on at most every 0.2 s. 1.5 s after the last tap the bar says its
 //   name again and goes on top (showSent, thenOnTop).
 // - Every friend you Yo Yos back, 1.2 to 3 s after your Yo went, the replies to several friends staggered so they come
 //   one after another: the Yo sound, the bar says "Yo from MIA" ("2× Yo from MIA") in the name's place, knocking as
-//   it comes, and goes on top (receivedRow, rise). Still saying "Sent Yo!", the bar grows a second line for it. A
-//   friend has one reply on its way at most: more taps before it came do not add or delay one. The Yo stands 3 s and
-//   fades out by 5 s (yoSolidSeconds, yoSeconds); then the name again.
-//   While you are still tapping, the list does not move (rise waits for `sending`).
-// - A group's bar: a Yo goes to all its members; one of them Yos back, a line under the group's name ("MOM: 2× Yo",
-//   SenderBlocks), the bar growing by a bar's height for it; the lines go as a friend's "Yo" does, then the bar
-//   shrinks back.
+//   it comes, and goes on top (receivedRow, rise). The newest wins: a Yo back replaces "Sent Yo!", a tap after it
+//   says "Sent Yo!" again. A friend has one reply on its way at most. The Yo stands 3 s and fades out by 5 s
+//   (yoSolidSeconds, yoSeconds); then the name again. While you are still tapping, the list does not move.
+// - A group's bar ("#FAMILY", one "#"): a Yo goes to all its members and several Yo back. One sender: "Yo from MOM";
+//   two or more: all of them, newest first, the count before the name, over two small lines in the same bar
+//   ("2× Yo from TOM, 3× ANNA," / "4× PETER, LUKAS +2"): whole names only, what does not fit as "+N"
+//   (line::sender_flow, line::flow_two_lines). A send or the name coming back starts the senders over.
+// - Titles are never cut: the bar's size if they fit, else the small size, else two small lines in whole words
+//   (line::wrap_two_lines); a single word too wide even then shrinks.
 // - Going on top is a delete and an insert, as the app's list does it: the bar's place fades, the bars above slide
 //   down one, the bar comes in from the top (transform and opacity only).
 // - "+" opens the name field (addRow): what may be typed is the app's (username_canonical: Latin letters, accents
@@ -22,7 +27,8 @@
 // - Camera mode (the camera button): the bars see-through over a picture, a tap "sends a photo" (the shutter's click
 //   when it takes one from the live picture, "Sent 📷", the undo ring for 2 s, then as a send); "✕" or Escape closes it. No camera is used. the "Yo" button: Invite, Add Group, Settings;
 //   Add Group is the app's sheet (a name, the friends to pick, Create) and puts the group's bar on top.
-// - autoplay: now and then a Yo arrives by itself while the phone is in view; silent until the visitor has made a Yo.
+// - autoplay: now and then Yos arrive by themselves while the phone is in view: a friend's, or a group's from several
+//   members; silent until the visitor has made a Yo.
 // - banner: an arriving Yo also drops the app's notification in ("Yo", "From MIA", "From LEO @ FAMILY") (the app shows none while open; for pages that want it).
 // - Reduced motion: nothing arrives by itself and nothing slides; taps still work.
 //
@@ -37,6 +43,8 @@ const YO_SECONDS = 5;
 // REPLY_GAP_SECONDS apart (and up to 0.7 s more).
 const REPLY_SECONDS = [1.2, 3];
 const REPLY_GAP_SECONDS = 0.6;
+// A group's members Yo back about this far apart.
+const BURST_GAP_SECONDS = 0.8;
 const ROWS = ['#1ABC9C', '#2ECC71', '#3498DB', '#34495E', '#16A085', '#F1C40F', '#2980B9', '#8E44AD'];
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait = (ms: number) => new Promise((ok) => setTimeout(ok, ms));
@@ -69,6 +77,91 @@ function canonical(typed: string) {
 const skeleton = (name: string) =>
   name.normalize('NFD').replace(/\p{M}/gu, '').toUpperCase().replace(/0/g, 'O').replace(/[1L]/g, 'I');
 
+// ---- A bar's words, laid out as the core lays them out (yo/core/product/src/line.rs) ----
+
+/** A group's Yos by whom, oldest first; shown newest first. */
+type Sender = { name: string; count: number };
+
+/** What a bar tells: a title (its name, a send's words, a notice), one sender's Yos, or a group's senders. */
+type Words =
+  | { kind: 'title'; text: string }
+  | { kind: 'arrival'; count: number; name: string }
+  | { kind: 'senders'; senders: Sender[] };
+
+// The app's sizes on a 390-point-wide iPhone: the small size is 24 of the bar's 36 (Metrics.rowSmallFont), a
+// bar's words keep 20 points from each edge (BarRow.margin), a title at the bar's size needs 16 more (SteadyText).
+const SMALL = 24 / 36;
+const MARGIN = 20 / 390;
+const SLACK = 16 / 390;
+
+let measurer: CanvasRenderingContext2D | null | undefined;
+/** The width of `text` in Montserrat Bold at `px`, with the bars' letter spacing (0.01em). */
+function widthOf(text: string, px: number) {
+  if (measurer === undefined) measurer = document.createElement('canvas').getContext('2d');
+  const spacing = graphemes(text).length * px * 0.01;
+  if (!measurer) return text.length * px * 0.7 + spacing;
+  measurer.font = `700 ${px}px Montserrat, sans-serif`;
+  return measurer.measureText(text).width + spacing;
+}
+
+/**
+ * The senders (newest first) over two lines (the second may be empty), as line::sender_flow and
+ * line::flow_two_lines: the count before each name ("2× Yo from TOM, 3× ANNA," / "4× PETER, LUKAS +2"), whole
+ * names only; when the newest does not fit beside "Yo from", that stands alone and the names start on the second
+ * line; whatever does not fit ends the second line as " +N".
+ */
+function flowTwoLines(senders: Sender[], w: (text: string) => number, room: number): [string, string] {
+  const prefix = `${yoWords(senders[0]?.count ?? 1)} from `;
+  const tokens = senders.map((s, i) => (i > 0 && s.count > 1 ? `${s.count}× ${s.name}` : s.name));
+  const n = tokens.length;
+  const sep = w(', ');
+  const comma = w(',');
+  const more = (left: number) => (left === 0 ? 0 : w(` +${left}`));
+  let first = prefix;
+  let used = w(prefix);
+  let placed = 0;
+  while (placed < n) {
+    const add = (placed === 0 ? 0 : sep) + w(tokens[placed]);
+    if (used + add + (placed + 1 < n ? comma : 0) > room) break;
+    if (placed > 0) first += ', ';
+    first += tokens[placed];
+    used += add;
+    placed += 1;
+  }
+  if (placed === 0) first = first.trimEnd();
+  else if (placed < n) first += ',';
+  let second = '';
+  const start = placed;
+  used = 0;
+  while (placed < n) {
+    const add = (placed === start ? 0 : sep) + w(tokens[placed]);
+    // The first line holds no name: the second always holds one.
+    const forced = start === 0 && placed === 0;
+    if (!forced && used + add + more(n - placed - 1) > room) break;
+    if (placed > start) second += ', ';
+    second += tokens[placed];
+    used += add;
+    placed += 1;
+  }
+  if (placed < n) second += second ? ` +${n - placed}` : `+${n - placed}`;
+  return [first, second];
+}
+
+/** A title over two lines in whole words (line::wrap_two_lines): as many as fit on the first, at least one. */
+function wrapTwoLines(text: string, w: (text: string) => number, room: number): [string, string] {
+  const words = text.split(' ').filter(Boolean);
+  const space = w(' ');
+  let used = 0;
+  let split = 0;
+  while (split < words.length) {
+    const add = (split === 0 ? 0 : space) + w(words[split]);
+    if (split > 0 && used + add > room) break;
+    used += add;
+    split += 1;
+  }
+  return [words.slice(0, split).join(' '), words.slice(split).join(' ')];
+}
+
 // ---- A bar ----
 
 type Bar = {
@@ -77,23 +170,25 @@ type Bar = {
   members?: string[];
   text: HTMLElement;
   words: HTMLElement;
-  lines?: HTMLElement;
-  second?: HTMLElement; // the received line under "Sent Yo!", while both are on the bar
+  what?: Words; // what it tells now, kept to lay it out again when the phone's width changes
   sent: number; // taps in this run
   shown: number; // the taps the bar says (it moves on at most every 0.2 s)
-  sentWords: string; // 'yo' while it says "Sent Yo!", "Sent 📷", or '' when it says no send
+  sentWords: string; // 'yo' while it says "Sent Yo!", "Sent 📷" or a notice, '' when it says no send
   said: string; // what kind of words the bar says now: 'sent', 'got' or 'name'
   fading: boolean; // the Yos on it are fading out
   sentTimer: number;
   tick: number;
   nextTick: number;
-  back: number; // the timer of the one Yo back on its way, 0 when none is
+  back: number; // the timer of the Yos back on their way, 0 when none are
   got: number; // Yos on the bar now
+  senders: Sender[]; // a group's: who sent them, oldest first
   gotRun: number; // to tell a run's timers from the next one's
+  toldAt: number; // when the bar last told of a send or a notice, and when a Yo last came: the newer wins
+  arrivalAt: number;
 };
 
-// A group's name carries a "#" ("#FAMILY"), in the name's own type (usernames cannot hold "#").
-const shownName = (name: string, members?: string[]) => (members ? `#${name}` : name);
+// A group's name carries one "#" ("#FAMILY"), whether it brings its own or not (line::bar_title).
+const shownName = (name: string, members?: string[]) => (members ? `#${name.replace(/^#/, '')}` : name);
 
 function barElement(name: string, color: number, members?: string[]) {
   const li = document.createElement('li');
@@ -101,11 +196,18 @@ function barElement(name: string, color: number, members?: string[]) {
   li.dataset.color = String(color);
   if (members) li.dataset.members = members.join(',');
   li.style.setProperty('--c', ROWS[color]);
-  li.innerHTML =
-    `<span class="head" role="button" tabindex="0"><span class="words"><span class="text"></span></span></span>` +
-    (members ? '<span class="lines"></span>' : '');
+  li.innerHTML = `<span class="head" role="button" tabindex="0"><span class="words"><span class="text"></span></span></span>`;
   li.querySelector('.text')!.textContent = shownName(name, members);
   return li;
+}
+
+/** Some of a group's members Yo back, one after another: two or more of them, some more than once. */
+function chorus(members: string[]) {
+  const shuffled = [...members].sort(() => Math.random() - 0.5);
+  const some = shuffled.slice(0, 2 + Math.floor(Math.random() * (members.length - 1)));
+  const from = [...some];
+  for (let extra = Math.floor(Math.random() * 5); extra > 0; extra--) from.push(pick(some));
+  return from.sort(() => Math.random() - 0.5);
 }
 
 export class YoPhone {
@@ -215,6 +317,11 @@ export class YoPhone {
       });
     }
 
+    // Every bar's words laid out for the phone's width, again when it changes and once the font is there.
+    const refit = () => this.bars.forEach((bar) => this.render(bar, ''));
+    refit();
+    if (this.list) new ResizeObserver(refit).observe(this.list);
+    document.fonts?.ready.then(refit);
     new IntersectionObserver(([e]) => { this.visible = e.isIntersecting; }).observe(root);
     if ('autoplay' in root.dataset && !reduced()) this.ambient();
   }
@@ -226,9 +333,8 @@ export class YoPhone {
       members: li.dataset.members?.split(',').filter(Boolean),
       text: li.querySelector('.text')!,
       words: li.querySelector('.words')!,
-      lines: li.querySelector<HTMLElement>('.lines') ?? undefined,
       sent: 0, shown: 0, sentWords: '', said: 'name', fading: false,
-      sentTimer: 0, tick: 0, nextTick: 0, back: 0, got: 0, gotRun: 0,
+      sentTimer: 0, tick: 0, nextTick: 0, back: 0, got: 0, senders: [], gotRun: 0, toldAt: 0, arrivalAt: 0,
     };
     this.bars.set(li, bar);
     return bar;
@@ -252,10 +358,7 @@ export class YoPhone {
 
   // ---- Sending ----
 
-  private say(bar: Bar, text: string) {
-    bar.text.textContent = text;
-    this.animate(bar.words, 'fresh');
-  }
+  private sequence = 0;
 
   private animate(el: HTMLElement, name: string) {
     el.classList.remove('fresh', 'knock');
@@ -263,32 +366,67 @@ export class YoPhone {
     el.classList.add(name);
   }
 
+  /** The bar tells of a send or a notice: newer than its Yos, which are no longer shown; its senders start over. */
+  private told(bar: Bar) {
+    bar.toldAt = ++this.sequence;
+    bar.got = 0;
+    bar.senders = [];
+    bar.fading = false;
+    bar.gotRun += 1;
+  }
+
   /**
-   * What the bar says now, as the app's bar words: what you sent ("Sent 2× Yo!") or what came in ("Yo from MIA") in
-   * the name's place, the name otherwise; both at once, the sent words on top and the received line under them (the
-   * bar a bar's height taller). A count moving on swaps in place; other words come in fresh (`come`: or knocking).
+   * What the bar says now, in its one line: the newest of what you sent ("Sent 2× Yo!") and the Yos that came after
+   * it ("Yo from MIA", a group's senders), the name otherwise. A count moving on swaps in place; other words come in
+   * fresh (`come`: or knocking).
    */
   private render(bar: Bar, come = 'fresh') {
     const sent = bar.sentWords === 'yo' ? sentWords(bar.shown) : bar.sentWords;
-    const got = !bar.members && bar.got > 0 ? `${yoWords(bar.got)} from ${bar.name}` : '';
-    const said = sent ? 'sent' : got ? 'got' : 'name';
-    bar.text.textContent = sent || got || shownName(bar.name, bar.members);
-    if (said !== bar.said) this.animate(bar.words, said === 'got' ? come : 'fresh');
+    const yos = bar.got > 0 && bar.arrivalAt > bar.toldAt;
+    const said = yos ? 'got' : sent ? 'sent' : 'name';
+    let what: Words;
+    if (said === 'sent') what = { kind: 'title', text: sent };
+    else if (said === 'name') what = { kind: 'title', text: shownName(bar.name, bar.members) };
+    else if (!bar.members) what = { kind: 'arrival', count: bar.got, name: bar.name };
+    else if (bar.senders.length > 1) what = { kind: 'senders', senders: [...bar.senders].reverse() };
+    else what = { kind: 'arrival', count: bar.senders[0]?.count ?? bar.got, name: bar.senders[0]?.name ?? 'Someone' };
+    this.lay(bar, what);
+    if (said !== bar.said && come) this.animate(bar.words, said === 'got' ? come : 'fresh');
     bar.said = said;
     bar.words.classList.toggle('fading', bar.fading && said === 'got');
-    if (sent && got) {
-      if (!bar.second) {
-        const line = Object.assign(document.createElement('span'), { className: 'gline fresh' });
-        this.grow(bar, () => bar.li.append(line));
-        bar.second = line;
-      }
-      bar.second.textContent = got;
-      bar.second.classList.toggle('fading', bar.fading);
-    } else if (bar.second) {
-      const line = bar.second;
-      bar.second = undefined;
-      this.grow(bar, () => line.remove());
+  }
+
+  /**
+   * The words in the bar's one line (BarText.swift): a title or one sender's Yos at the bar's size if they fit,
+   * else at the small size, over two small lines if they must (a title in whole words, Yos with the names whole);
+   * a line wider than the room even so (one long word) shrinks. Never "…".
+   */
+  private lay(bar: Bar, what: Words) {
+    bar.what = what;
+    const pw = bar.li.clientWidth;
+    const big = parseFloat(getComputedStyle(bar.li).fontSize);
+    const line = what.kind === 'title' ? what.text : what.kind === 'arrival' ? `${yoWords(what.count)} from ${what.name}` : '';
+    const room = pw * (1 - 2 * MARGIN);
+    if (!pw || !big || (line && widthOf(line, big) + pw * SLACK <= room)) {
+      bar.text.classList.remove('small');
+      bar.text.textContent = line || (what.kind === 'senders' ? `Yo from ${what.senders.map((s) => s.name).join(', ')}` : '');
+      return;
     }
+    const small = big * SMALL;
+    const w = (t: string) => widthOf(t, small);
+    let lines: string[];
+    if (what.kind === 'title') lines = w(line) <= room ? [line] : wrapTwoLines(line, w, room);
+    else if (what.kind === 'arrival') lines = flowTwoLines([{ name: what.name, count: what.count }], w, room);
+    else lines = flowTwoLines(what.senders, w, room);
+    bar.text.classList.add('small');
+    bar.text.replaceChildren(
+      ...lines.filter(Boolean).map((l) => {
+        const span = Object.assign(document.createElement('span'), { className: 'ln', textContent: l });
+        const width = w(l);
+        if (width > room) span.style.fontSize = `${Math.max(0.5, room / width) * 100}%`;
+        return span;
+      }),
+    );
   }
 
   private send(bar: Bar, user: boolean, photo = false) {
@@ -297,6 +435,7 @@ export class YoPhone {
       playClick();
       navigator.vibrate?.(30);
     }
+    this.told(bar);
     if (photo) return this.sendPhoto(bar);
     bar.sent += 1;
     if (bar.sentWords !== 'yo') {
@@ -305,6 +444,7 @@ export class YoPhone {
       bar.nextTick = performance.now() + 200;
       this.render(bar);
     } else {
+      this.render(bar);
       clearTimeout(bar.tick);
       bar.tick = window.setTimeout(() => {
         bar.shown = bar.sent;
@@ -318,9 +458,9 @@ export class YoPhone {
   }
 
   /**
-   * The friend (or one of the group) Yos back, `after` ms plus 1.2 to 3 s from now, and at least 0.6 to 1.3 s after
-   * the Yo back before it, so replies to several friends arrive one by one. A friend with a reply already on its way
-   * keeps that one: no second reply is added and the first is not put off.
+   * The friend Yos back (a group: several of its members, one after another), `after` ms plus 1.2 to 3 s from now,
+   * and at least 0.6 to 1.3 s after the Yos back before them, so replies to several bars arrive one by one. A bar
+   * with replies already on their way keeps those: none are added and they are not put off.
    */
   private replyLater(bar: Bar, after: number) {
     if (bar.back) return;
@@ -330,12 +470,19 @@ export class YoPhone {
       now + after + (least + Math.random() * (most - least)) * 1000,
       this.lastReply + (REPLY_GAP_SECONDS + Math.random() * 0.7) * 1000,
     );
-    this.lastReply = due;
-    const member = bar.members ? pick(bar.members) : undefined;
-    bar.back = window.setTimeout(() => {
-      bar.back = 0;
+    const from = bar.members ? chorus(bar.members) : [undefined];
+    this.lastReply = due + (from.length - 1) * BURST_GAP_SECONDS * 1000;
+    bar.back = window.setTimeout(() => this.burst(bar, from), due - now);
+  }
+
+  /** Yos from these (undefined: the friend), one after another, the bar's replies on their way until the last. */
+  private async burst(bar: Bar, from: (string | undefined)[]) {
+    bar.back ||= -1;
+    for (const [i, member] of from.entries()) {
+      if (i) await wait((BURST_GAP_SECONDS * 0.6 + Math.random() * BURST_GAP_SECONDS * 0.8) * 1000);
       this.receive(bar, member);
-    }, due - now);
+    }
+    bar.back = 0;
   }
 
   /**
@@ -599,79 +746,45 @@ export class YoPhone {
 
   // ---- Receiving ----
 
+  /**
+   * A Yo arrives (from a group's `member`): the newest on the bar. A new run (none on the bar, or the last one
+   * fading) knocks as it comes and starts the senders over; within a run the count moves on in place.
+   */
   private receive(bar: Bar, member?: string) {
     if (!bar.li.isConnected) return;
     if (heard()) playYo({ overlap: true, user: false });
     this.banner(member ? `${member} @ ${bar.name}` : bar.name); // as the notification says it (ShareBridge)
     const run = ++bar.gotRun;
-    if (bar.lines && member) this.landLine(bar, member);
-    else {
-      // A new run (none on the bar, or the last one fading) knocks as it comes.
-      const knock = bar.got === 0 || bar.fading;
-      bar.got = (bar.fading ? 0 : bar.got) + 1;
-      bar.fading = false;
-      if (knock && !bar.sentWords) bar.said = '';
-      this.render(bar, 'knock');
-      if (knock && bar.second) this.animate(bar.second, 'knock');
+    const fresh = bar.got === 0 || bar.fading;
+    if (fresh) {
+      bar.got = 0;
+      bar.senders = [];
+      bar.said = '';
     }
+    bar.got += 1;
+    bar.fading = false;
+    if (member) {
+      const at = bar.senders.findIndex((s) => s.name === member);
+      const sender = at >= 0 ? bar.senders.splice(at, 1)[0] : { name: member, count: 0 };
+      sender.count += 1;
+      bar.senders.push(sender); // the newest last
+    }
+    bar.arrivalAt = ++this.sequence;
+    this.render(bar, 'knock');
     this.rise(bar);
     this.settle(bar, run);
   }
 
-  /** A member's Yo on a group's bar: their line counts one more, or a new line comes under the others. */
-  private landLine(bar: Bar, member: string) {
-    const lines = bar.lines!;
-    if (lines.classList.contains('fading')) this.dropLines(bar, false);
-    let line = [...lines.children].find((l) => (l as HTMLElement).dataset.from === member) as HTMLElement | undefined;
-    if (!line) {
-      line = document.createElement('span');
-      line.className = 'gline fresh';
-      line.dataset.from = member;
-      line.dataset.count = '0';
-      this.grow(bar, () => lines.append(line!));
-    }
-    const count = Number(line.dataset.count) + 1;
-    line.dataset.count = String(count);
-    line.textContent = `${member}: ${yoWords(count)}`;
-    bar.got += 1;
-  }
-
-  /** Change a bar's height (fn), the bars under it sliding from where they were. */
-  private grow(bar: Bar, fn: () => void) {
-    const before = bar.li.offsetHeight;
-    fn();
-    const delta = bar.li.offsetHeight - before;
-    if (!delta || reduced()) return;
-    const rows = [...(this.list?.children ?? [])] as HTMLElement[];
-    rows.slice(rows.indexOf(bar.li) + 1).forEach((el) => {
-      if (!el.classList.contains('ghost')) el.animate([{ transform: `translateY(${-delta}px)` }, { transform: 'none' }], { duration: 300, easing: ease });
-    });
-  }
-
-  private dropLines(bar: Bar, animate = true) {
-    const lines = bar.lines!;
-    lines.classList.remove('fading');
-    if (animate) this.grow(bar, () => lines.replaceChildren());
-    else lines.replaceChildren();
-  }
-
-  /** The Yos stand 3 s, then fade out by 5 s; then the group's lines go (the bar shrinks back) or the name is back. */
+  /** The Yos stand 3 s, then fade out by 5 s; then the name is back (or a send, if newer). */
   private async settle(bar: Bar, run: number) {
     await wait(YO_SOLID_SECONDS * 1000);
     if (bar.gotRun !== run) return;
-    if (bar.lines?.childElementCount) {
-      bar.lines.classList.add('fading');
-      await wait((YO_SECONDS - YO_SOLID_SECONDS) * 1000);
-      if (bar.gotRun !== run) return;
-      bar.got = 0;
-      this.dropLines(bar); // the lines go and the bar shrinks back
-      return;
-    }
     bar.fading = true;
     this.render(bar);
     await wait((YO_SECONDS - YO_SOLID_SECONDS) * 1000);
     if (bar.gotRun !== run) return;
     bar.got = 0;
+    bar.senders = [];
     bar.fading = false;
     this.render(bar);
   }
@@ -689,17 +802,21 @@ export class YoPhone {
     this.push?.classList.remove('in');
   }
 
+  private turns = 0;
+
   /** Now and then a Yo arrives by itself, while the phone is in view and shows the list. */
   private async ambient() {
     await wait(2500 + Math.random() * 2000);
     for (;;) {
       if (this.visible && !document.hidden && this.screen === 'list' && !this.input) {
         // Not the top bar (it would not move): one further down, not busy and with no Yo back on its way.
+        // Every third time a group's: several of its members, one after another.
         const calm = this.order().slice(1).filter((b) => !b.sent && !b.got && !b.back);
-        if (calm.length) {
-          const bar = pick(calm);
-          this.receive(bar, bar.members ? pick(bar.members) : undefined);
-        }
+        const groups = calm.filter((b) => b.members && b.members.length > 1);
+        const turn = ++this.turns % 3 === 0 && groups.length;
+        const friends = calm.filter((b) => !b.members);
+        const bar = turn ? pick(groups) : friends.length ? pick(friends) : calm.length ? pick(calm) : undefined;
+        if (bar) this.burst(bar, bar.members ? (turn ? chorus(bar.members) : [pick(bar.members)]) : [undefined]);
       }
       await wait(5000 + Math.random() * 3500);
     }
@@ -744,6 +861,8 @@ export class YoPhone {
   private slideIn(li: HTMLElement, moving: HTMLElement[]) {
     this.list!.prepend(li);
     this.list!.scrollTo({ top: 0 });
+    const bar = this.bars.get(li);
+    if (bar && !bar.what) this.render(bar, ''); // a new bar's name, laid out now that it has its width
     if (reduced()) return;
     const h = li.offsetHeight;
     const timing = { duration: 350, easing: ease };
@@ -834,7 +953,9 @@ export class YoPhone {
     if (known) {
       // Already on the list: its bar says so, as a send does, and stays where it is.
       if (!known.sent) {
-        this.say(known, 'Already Added');
+        this.told(known);
+        known.sentWords = 'Already Added';
+        this.render(known);
         clearTimeout(known.sentTimer);
         known.sent = 0;
         known.sentTimer = window.setTimeout(() => this.sentOver(known, false), SENT_SECONDS * 1000);

@@ -15,7 +15,7 @@
 // Create puts the group's bar on top, a group as the others.
 //
 //   names        the bars, top to bottom: a friend's name, or a group { group: 'FAMILY', members: ['MOM', …] } (default
-//                LEO, MIA, the groups FAMILY and BFFS 💃, EMMA, JONAS, ZOE); "+" comes last as a bar
+//                LEO, MIA, the groups FAMILY and BFFS 💃, EMMA, MAXIMILIAN, ZOE); "+" comes last as a bar
 //   screen       the screen shown: 'list' (default) | 'signup' (just a username) | 'locked' (a sealed Yo on the lock
 //                screen) | 'code' (a sealed Yo: Yo-to-Yo encrypted, Yo over IP, open source)
 //   screens      the screens drawn (default: just `screen`); for a phone that changes its screen
@@ -35,8 +35,9 @@
 // 1.5 s after the last tap the bar says its name again and goes on top. A Yo arriving plays the Yo sound and the bar
 // says "Yo from MIA" ("2× Yo from MIA") in the name's place, stands 3 s and fades out by 5 s; the bar goes on
 // top (a delete and an insert: its place fades, the bars above slide down, it comes in from the top). A group's bar
-// carries a "#" before its name ("#FAMILY"); a Yo to it goes to all, and its members' Yos come in as lines under the
-// name ("MOM: 2× Yo"), the bar growing by one bar for each. "+" opens the name field: a name typed (the app's rules)
+// carries one "#" before its name ("#FAMILY"); a Yo to it goes to all, and its members Yo back: every bar stays one
+// bar high, a group's senders newest first over two small lines ("2× Yo from TOM, 3× ANNA," / "4× PETER, LUKAS +2").
+// Titles are never cut: the bar's size, else the small size, else two small lines. "+" opens the name field: a name typed (the app's rules)
 // is added on top in the next colour; Escape or a tap elsewhere closes it. Nothing leaves the page.
 
 export type Screen = 'list' | 'signup' | 'locked' | 'code';
@@ -58,10 +59,10 @@ const {
   names = [
     'LEO',
     'MIA',
-    { group: 'FAMILY', members: ['MOM', 'DAD', 'LILY'] },
-    { group: 'BFFS 💃', members: ['ZOE', 'KAI', 'NOAH'] },
+    { group: 'FAMILY', members: ['MOM', 'DAD', 'LILY', 'GRANDPA'] },
+    { group: 'BFFS 💃', members: ['TOM', 'ANNA', 'PETER', 'LUKAS', 'SOPHIA', 'NOAH', 'CHARLOTTE'] },
     'EMMA',
-    'JONAS',
+    'MAXIMILIAN',
     'ZOE',
   ],
   screen = 'list',
@@ -111,10 +112,9 @@ const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55
                 data-members={group?.members.join(',')}>
                 <span class="head" role={interactive ? 'button' : undefined} tabindex={interactive ? 0 : undefined}>
                   <span class="words">
-                    <span class="text">{group ? `#${name}` : name}</span>
+                    <span class="text">{group ? `#${name.replace(/^#/, '')}` : name}</span>
                   </span>
                 </span>
-                {group && <span class="lines"></span>}
               </li>
             );
           })}
@@ -334,13 +334,9 @@ const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55
   }
   .yo-phone .bars::-webkit-scrollbar { display: none; }
   .yo-phone .head { position: relative; height: var(--bar); display: grid; place-items: center; }
-  /* A group: the app's sign (person.3.fill) before its name, outside it, so the name stays in the middle */
-  /* A group's Yos, by whom: a line each under the name, as tall as a bar ("MOM: 2× Yo"); a bar's Yo under "Sent Yo!" the same */
-  .yo-phone .lines { display: block; }
-  .yo-phone .gline { height: var(--bar); display: grid; place-items: center; transition: opacity 2s ease; }
-  .yo-phone .gline.fresh { animation: yp-line 0.35s ease-out; }
-  .yo-phone .lines.fading .gline { opacity: 0; }
-  @keyframes yp-line { from { opacity: 0; } }
+  /* Words that do not fit at the bar's size: the small size (24 of the app's 36), one or two lines, in the same bar */
+  .yo-phone .text.small { display: block; font-size: calc(var(--pw) * 0.077 * 2 / 3); line-height: 1.2; text-align: center; }
+  .yo-phone .text .ln { display: block; }
   /* "+" open: the name field, typed in capitals as names show */
   .yo-phone .add input {
     all: unset;
@@ -363,9 +359,9 @@ const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55
   /* The bar's words in the middle: the name, "Sent 2× Yo!" or "Yo from MIA"; new words come in fresh, a Yo knocks */
   .yo-phone .words { position: relative; }
   .yo-phone .words.fresh { animation: yp-words 0.2s ease-out; }
-  .yo-phone .words.knock, .yo-phone .gline.knock { animation: yp-knock 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.4); }
+  .yo-phone .words.knock { animation: yp-knock 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.4); }
   /* the Yos fade out (only then: back, the name is there at once) */
-  .yo-phone .words.fading, .yo-phone .gline.fading { opacity: 0; transition: opacity 2s ease; }
+  .yo-phone .words.fading { opacity: 0; transition: opacity 2s ease; }
   /* "+" open: a name field for a moment */
   .yo-phone .add .text { font-size: calc(var(--pw) * 0.1); }
   .yo-phone .add.adding .head { display: block; }
