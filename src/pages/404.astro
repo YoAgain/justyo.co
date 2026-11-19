@@ -3,6 +3,10 @@
 // with Yo installed iOS and Android open the app for it (apple-app-site-association, assetlinks.json); where they
 // do not (Safari on this site, a typed link) "Open in Yo" does, with the app's scheme; without Yo it leads on to
 // TestFlight. The name is read in the browser only; nothing is sent anywhere.
+//
+// The invite is the app's share card (YourCode.swift, ContactCodeCard: 360 x 450 points, the name at 32, a white QR
+// code of 216 with 42 around it and "Yo" in its centre, the link at most 40 and fitted to 300), drawn here in
+// container units so it scales with the window. The QR code is always shown, for a phone across the room.
 import Head from '../components/Head.astro';
 ---
 <!doctype html>
@@ -10,9 +14,9 @@ import Head from '../components/Head.astro';
   <head>
     <Head title="Yo" noindex weights="700" />
     <style>
-      html, body { margin: 0; height: 100%; background: #9B59B6; color: #fff; font-family: 'Montserrat', sans-serif; }
+      html, body { margin: 0; height: 100%; background: #9B59B6; color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 700; }
       main {
-        min-height: 100%; box-sizing: border-box; padding: 2rem 1rem; display: flex; align-items: center;
+        min-height: 100%; box-sizing: border-box; padding: 1rem; display: flex; align-items: center;
         justify-content: center;
       }
       .column {
@@ -20,33 +24,52 @@ import Head from '../components/Head.astro';
         text-align: center;
       }
       .column > div { display: contents; }
-      .yo { font-size: clamp(5rem, 24vw, 12rem); line-height: 1; }
       h1 { margin: 0; width: 100%; text-align: center; font-size: clamp(1.5rem, 6vw, 2.5rem); line-height: 1.2; overflow-wrap: anywhere; }
       p { margin: 0; font-size: 1.05rem; line-height: 1.45; opacity: .9; }
+      /* The card: 360 x 450 in the app; 1cqw is 3.6 of its points. The height left for it is the window less the
+         padding, the gap and the button. */
+      .card {
+        container-type: inline-size; box-sizing: border-box; aspect-ratio: 360 / 450;
+        width: min(100%, 480px, calc((100svh - 2rem - 1.25rem - 4rem) * 0.8));
+        display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+        background: #9B59B6; border-radius: 6cqw; overflow: hidden;
+        box-shadow: 0 .5rem 2.5rem rgb(0 0 0 / .22), 0 0 0 1px rgb(255 255 255 / .12);
+      }
+      .card .who {
+        box-sizing: border-box; width: 100%; padding: 6.667cqw 6.667cqw 0; font-size: 8.889cqw; line-height: 1.22;
+        overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+      }
+      .card .code { position: relative; width: 60cqw; height: 60cqw; padding: 11.667cqw; flex: none; }
+      .card .code svg { display: block; width: 100%; height: 100%; }
+      .card .code span {
+        position: absolute; left: 50%; top: 50%; width: 12.222cqw; height: 12.222cqw; transform: translate(-50%, -50%);
+        display: flex; align-items: center; justify-content: center; background: #9B59B6; font-size: 6.667cqw;
+      }
+      .card .link {
+        width: 83.333cqw; height: 11.111cqw; margin: 2.222cqw 0 4.444cqw; display: flex; align-items: center;
+        justify-content: center; white-space: nowrap; font-size: 11.111cqw; line-height: 1;
+      }
       a.button {
-        display: block; box-sizing: border-box; width: 100%; max-width: 20rem; margin-top: .5rem; padding: 1rem 2rem;
+        display: block; box-sizing: border-box; width: 100%; max-width: 20rem; padding: 1rem 2rem;
         border-radius: 999px; background: #fff; color: #000; text-decoration: none; font-size: 1.25rem;
       }
       a.plain { color: #fff; opacity: .85; }
-      .soon { opacity: .7; font-size: .95rem; }
-      #qr { display: flex; flex-direction: column; align-items: center; gap: .75rem; }
-      #qrcode { width: 12rem; height: 12rem; background: #fff; border-radius: 1rem; overflow: hidden; }
-      #qrcode svg { display: block; width: 100%; height: 100%; }
+      .soon { opacity: .7; font-size: .95rem; margin-top: -.5rem; }
       [hidden] { display: none !important; }
     </style>
   </head>
   <body>
     <main>
       <div class="column">
-        <div class="yo">Yo</div>
         <div id="invite" hidden>
-          <h1><span id="name"></span> wants to Yo you.</h1>
+          <div class="card" role="img" id="card">
+            <div class="who"><span id="name"></span> wants to Yo</div>
+            <div class="code"><div id="qrcode"></div><span aria-hidden="true">Yo</span></div>
+            <div class="link"><span id="link"></span></div>
+          </div>
           <a class="button" id="open" href="#">Open in Yo</a>
           <p class="soon" id="android" hidden>Yo for Android: soon.</p>
-          <div id="qr" hidden>
-            <div id="qrcode"></div>
-            <p class="soon">Scan with your iPhone to open it in Yo.</p>
-          </div>
+          <p class="soon" id="scan" hidden>Scan the code with your iPhone to open it in Yo.</p>
         </div>
         <div id="lost">
           <h1>Nothing here.</h1>
@@ -66,11 +89,43 @@ import Head from '../components/Head.astro';
       try { part = decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, '')); } catch {}
       // Characters are counted as graphemes where the browser has Intl.Segmenter, else as code points.
       const count = 'Segmenter' in Intl ? [...new Intl.Segmenter().segment(part)].length : Array.from(part).length;
-      if (count >= 1 && count <= 16 && /^[\p{L}\p{M}\p{N}_\p{Extended_Pictographic}\p{Emoji_Component}\u200d]+$/u.test(part)) {
+      if (count >= 1 && count <= 16 && /^[\p{L}\p{M}\p{N}_\p{Extended_Pictographic}\p{Emoji_Component}‍]+$/u.test(part)) {
+        // The link as the app writes it (Invite.link): https://justyo.co/NAME.
+        const link = 'https://justyo.co/' + part;
         $('name').textContent = part;
+        $('link').textContent = link;
+        $('card').setAttribute('aria-label', `Contact QR code for ${part}. ${link}`);
         $('invite').hidden = false;
         $('lost').hidden = true;
         document.title = `${part} wants to Yo you`;
+
+        // As in the app: error correction H (the "Yo" in the centre covers a part), white modules on amethyst, the
+        // card's own padding as the quiet zone.
+        const code = qrcode(0, 'H');
+        code.addData(unescape(encodeURIComponent(link)));
+        code.make();
+        const n = code.getModuleCount();
+        let path = '';
+        for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (code.isDark(y, x)) path += `M${x} ${y}h1v1h-1z`;
+        $('qrcode').innerHTML =
+          `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges"><path fill="#fff" d="${path}"/></svg>`;
+
+        // The link shrinks to its box (the app's minimumScaleFactor); the name wraps to two lines and shrinks past that.
+        const fit = (el: HTMLElement, box: HTMLElement, wide: boolean) => {
+          el.style.fontSize = '';
+          box.style.fontSize = '';
+          const fits = () => (wide ? el.scrollWidth <= box.clientWidth : box.scrollHeight <= box.clientHeight + 1);
+          let scale = 1;
+          while (!fits() && scale > 0.1) {
+            scale *= 0.95;
+            (wide ? el : box).style.fontSize = `${(wide ? 11.111 : 8.889) * scale}cqw`;
+          }
+        };
+        const who = document.querySelector('.card .who') as HTMLElement;
+        const layout = () => { fit($('link'), $('link').parentElement!, true); fit(who, who, false); };
+        layout();
+        document.fonts?.ready.then(layout);
+        new ResizeObserver(layout).observe($('card'));
 
         const ua = navigator.userAgent;
         const android = /Android/i.test(ua);
@@ -81,15 +136,11 @@ import Head from '../components/Head.astro';
         // Universal and App Links do not fire for a link opened inside Safari on its own site, typed or pasted; the
         // app's own scheme (yo://NAME: Info.plist CFBundleURLTypes, the Android intent filter) does. If the page is
         // still in front 1.5 s later, Yo is not installed: iPhone goes to TestFlight, Android says soon. A computer
-        // has no Yo: it shows this page's address as a QR code for the phone.
+        // has no Yo: it points at the QR code for the phone.
         open.addEventListener('click', (event) => {
           if (!iphone && !android) {
             event.preventDefault();
-            const code = qrcode(0, 'M');
-            code.addData(location.href.split('#')[0]);
-            code.make();
-            $('qrcode').innerHTML = code.createSvgTag({ cellSize: 6, margin: 3, scalable: true });
-            $('qr').hidden = false;
+            $('scan').hidden = false;
             return;
           }
           let timer = 0;
