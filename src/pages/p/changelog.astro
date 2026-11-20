@@ -57,7 +57,10 @@ const description =
         content: ""; position: absolute; left: 28px; top: 0; bottom: 0; width: 2px;
         background: rgba(255, 255, 255, 0.35);
       }
-      section:last-child::before { bottom: 40px; }
+      /* the line ends in the last bubble: under the last entry's middle it is covered in the page's colour */
+      section:last-child li:last-child::after {
+        content: ""; position: absolute; left: -49px; top: 50%; bottom: -60px; width: 4px; background: #9B59B6;
+      }
       h2 {
         position: relative; margin: 0 0 42px; font: 900 clamp(2rem, 6.5vw, 3.2rem)/1 'Montserrat', sans-serif; text-shadow: 0 4px 0 rgba(60, 10, 90, 0.2);
       }
@@ -71,7 +74,7 @@ const description =
       /* each entry's mark on the line */
       .bubble {
         position: absolute; left: -66px; top: 50%; translate: 0 -50%; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
-        color: #8E44AD; background: #fff; box-shadow: 0 6px 14px -6px rgba(40, 5, 70, 0.7); font: 900 14px/1 'Montserrat', sans-serif;
+        z-index: 1; color: #8E44AD; background: #fff; box-shadow: 0 6px 14px -6px rgba(40, 5, 70, 0.7); font: 900 14px/1 'Montserrat', sans-serif;
       }
       section:first-child li:first-child .bubble { background: linear-gradient(180deg, #FFE36E, #F1C40F); }
 
