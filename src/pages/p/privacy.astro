@@ -20,7 +20,7 @@ const siteServices = services.filter((x) => ['GitHub', 'YouTube'].includes(x.nam
 // server) the legal basis. 🔒 marks what is encrypted (we cannot read it).
 type Row = [name: string, what: string, kept: string, law?: string];
 const server: Row[] = [
-  ['User id & keys', 'name, push token', 'until deletion (unsecured: 1 idle year)', 'b'],
+  ['User id & keys', 'name, push token', 'until deletion', 'b'],
   ['🔒 Backup & settings', 'to restore', 'until deletion', 'b'],
   ['🔒 Waiting Yos', 'photos, videos', 'max. 30 days', 'b'],
 ];
