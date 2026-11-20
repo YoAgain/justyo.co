@@ -8,8 +8,6 @@ Yo is back, and you can try it today: on iPhone and on Android.
 
 **iPhone.** Join the beta on [TestFlight](https://testflight.apple.com/join/V3wa1DeX), install, pick a username, tap a name. That's it.
 
-![Yo for Android. Beta's open. 1 Join group, 2 Become a tester, 3 Install.](/img/changelog/android-beta.png)
-
 **Android.** Google Play needs three taps for a beta:
 
 1. Join the testers: [groups.google.com/g/yo-android-testers](https://groups.google.com/g/yo-android-testers)
