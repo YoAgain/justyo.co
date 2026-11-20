@@ -29,7 +29,7 @@ const serverMinor: Row[] = [
   ['Feedback', 'only if you send it', 'until handled', 'b'],
   ['IP address', 'against abuse', 'memory only', 'f'],
   ['Request & upload limits', 'per account', '2 days', 'f'],
-  ['Crash reports', 'anonymous · off in Settings', 'max. 1 year', 'f'],
+  ['Crash reports', 'anonymous · off in Settings', 'max. 90 days', 'f'],
 ];
 const law: Record<string, string> = { b: 'needed for Yo', f: 'legitimate interest' };
 const phone: Row[] = [
@@ -121,6 +121,10 @@ const phone: Row[] = [
           <tr><td class="n">Cookies &amp; analytics</td><td class="d">none</td></tr>
         </tbody>
       </table>
+
+      <h2 id="delete">Delete your Yo account</h2>
+      <p>In the app: open your profile, tap <b>Account</b>, then <b>Delete Your Account</b>. Without the app on your phone: install Yo again, sign in with your passkey or Recovery Key and delete it there. If that is not possible, write to <a href={`mailto:${operator.email}`}>{operator.email}</a>; we delete it once we can tell it is yours.</p>
+      <p>Deleted at once, on the Yo Hub: your username, keys and devices, waiting Yos with their photos and videos, your encrypted backup and settings, and reports about you. Kept: support messages and crash reports, which carry a random install id and no account (crash reports up to 90 days). On your phone, deleting the app removes the rest.</p>
 
       <h2>Your rights</h2>
       <p>Access, correction, deletion, restriction, portability and objection: <a href={`mailto:${operator.email}`}>{operator.email}</a>.</p>
