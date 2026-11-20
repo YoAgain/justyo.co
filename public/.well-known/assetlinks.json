@@ -3,8 +3,8 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "app.justyo.android.dev",
-      "sha256_cert_fingerprints": ["REPLACE-WITH-THE-RELEASE-SIGNING-CERTIFICATE-SHA-256 (keytool -list -v -keystore ...)"]
+      "package_name": "app.justyo.android",
+      "sha256_cert_fingerprints": ["B7:93:BE:C6:F6:C5:2B:E6:A9:1A:B7:90:BC:60:27:95:33:D2:8A:59:E3:99:93:0D:9A:40:98:17:77:B5:35:6B"]
     }
   }
 ]
