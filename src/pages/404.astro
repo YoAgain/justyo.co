@@ -88,7 +88,9 @@ import Head from '../components/Head.astro';
       try { part = decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, '')); } catch {}
       // Characters are counted as graphemes where the browser has Intl.Segmenter, else as code points.
       const count = 'Segmenter' in Intl ? [...new Intl.Segmenter().segment(part)].length : Array.from(part).length;
-      if (count >= 1 && count <= 16 && /^[\p{L}\p{M}\p{N}_\p{Extended_Pictographic}\p{Emoji_Component}‍]+$/u.test(part)) {
+      // A digit may come first ("1abc"), but a name has a letter or emoji: "404" is no invite.
+      if (count >= 1 && count <= 16 && /^[\p{L}\p{M}\p{N}_\p{Extended_Pictographic}\p{Emoji_Component}‍]+$/u.test(part)
+          && /[\p{L}\p{Extended_Pictographic}]/u.test(part)) {
         // The link as the app writes it (Invite.link): https://justyo.co/NAME.
         const link = 'https://justyo.co/' + part;
         $('name').textContent = part;
