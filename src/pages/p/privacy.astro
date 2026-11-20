@@ -9,13 +9,14 @@ const description = 'Yo privacy: data, purposes, retention, providers and your r
 const roles: Record<string, string> = {
   Hetzner: 'runs the Yo Hub · Germany',
   Cloudflare: 'connection to the Yo Hub, sees IPs · International',
-  Apple: 'push, TestFlight, App Store · International',
+  Apple: 'iPhone only: push, TestFlight, App Store · International',
+  Google: 'Android from Google Play only: push (Firebase Cloud Messaging), Google Play, Android backup (Block Store) · International',
   GitHub: 'hosts this site, IP addresses in its logs · USA · legitimate interest',
   YouTube: 'Story videos, only after you click one · International',
 };
-const appServices = services.filter((x) => ['Hetzner', 'Cloudflare', 'Apple'].includes(x.name));
+const appServices = services.filter((x) => ['Hetzner', 'Cloudflare', 'Apple', 'Google'].includes(x.name));
 const siteServices = services.filter((x) => ['GitHub', 'YouTube'].includes(x.name));
-// Where the app's data is: on the Yo Hub (Yo's server), or only on your iPhone. Each row: what it is, how long it is kept, and (on the
+// Where the app's data is: on the Yo Hub (Yo's server), or only on your phone. Each row: what it is, how long it is kept, and (on the
 // server) the legal basis. 🔒 marks what is encrypted (we cannot read it).
 type Row = [name: string, what: string, kept: string, law?: string];
 const server: Row[] = [
@@ -34,7 +35,8 @@ const law: Record<string, string> = { b: 'needed for Yo', f: 'legitimate interes
 const phone: Row[] = [
   ['🔒 Keys & friends', 'your account', 'until sign-out'],
   ['🔒 Passkey & recovery key', 'only yours', 'until deletion'],
-  ['🔒 iCloud Keychain', 'restores your account', 'until deletion'],
+  ['🔒 iCloud Keychain (iPhone)', 'restores your account', 'until deletion'],
+  ['🔒 Google Block Store (Android)', 'restores your account', 'until deletion'],
   ['Photos & videos', 'not in backups', 'seen once'],
 ];
 ---
@@ -102,7 +104,7 @@ const phone: Row[] = [
       </table>
       <p class="note">🔒 encrypted, we can’t read it · GDPR: needed for Yo = Art. 6(1)(b), legitimate interest = Art. 6(1)(f)</p>
 
-      <h2 id="iphone">On your iPhone</h2>
+      <h2 id="iphone">On your phone (iPhone or Android)</h2>
       <table class="t">
         <tbody>{phone.map(([n, w, k, l]) => <tr><td class="n">{n}</td><td class="d"><span>{w}</span> · <span>{k}</span>{l && <> · <span class="law">{law[l]}</span></>}</td></tr>)}</tbody>
       </table>

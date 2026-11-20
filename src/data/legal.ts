@@ -19,11 +19,12 @@ export const services = [
   { name: 'Hetzner', url: 'https://www.hetzner.com/legal/privacy-policy', role: 'Server (Germany)', what: 'Hosts the server in Germany.' },
   { name: 'Cloudflare', url: 'https://www.cloudflare.com/privacypolicy/', role: 'Connection, sees IPs', what: 'Carries the connection to the server and protects it against attacks; it sees IP addresses and encrypted traffic.' },
   { name: 'Apple', url: 'https://www.apple.com/legal/privacy/', role: 'Push, TestFlight, App Store', what: "Delivers push notifications, TestFlight builds and the App Store, under Apple's own privacy policy." },
+  { name: 'Google', url: 'https://policies.google.com/privacy', role: 'Android only: push, Google Play, Android backup', what: "Only for the Android app from Google Play: delivers push notifications (Firebase Cloud Messaging), Google Play, and Android's backup of your account (Block Store), under Google's own privacy policy." },
   { name: 'GitHub', url: 'https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement', role: 'Hosts this site', what: "GitHub, Inc. hosts this website on GitHub Pages; it processes visitors' IP addresses in its server logs." },
   { name: 'YouTube', url: 'https://policies.google.com/privacy', role: 'Story videos, after a click', what: 'Google plays the videos on the Story page. A video loads from YouTube (youtube-nocookie.com) only after you click it; until then the page sends nothing to YouTube or Google.' },
 ];
 
 export const lastUpdated = {
-  privacy: 'November 16, 2026',
+  privacy: 'November 20, 2026',
   imprint: 'November 16, 2026',
 };
