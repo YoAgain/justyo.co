@@ -67,8 +67,8 @@ import Head from '../components/Head.astro';
             <div class="link"><span id="link"></span></div>
           </div>
           <a class="button" id="open" href="#">Open in Yo</a>
-          <p class="soon" id="android" hidden>Yo for Android: soon.</p>
-          <p class="soon" id="scan" hidden>Scan the code with your iPhone to open it in Yo.</p>
+          <p class="soon" id="android" hidden>Yo for Android is in beta: <a href="https://groups.google.com/g/yo-android-testers">join here</a>, then open this link again.</p>
+          <p class="soon" id="scan" hidden>Scan the code with your phone to open it in Yo.</p>
         </div>
         <div id="lost">
           <h1>Nothing here.</h1>
@@ -136,7 +136,7 @@ import Head from '../components/Head.astro';
 
         // Universal and App Links do not fire for a link opened inside Safari on its own site, typed or pasted; the
         // app's own scheme (yo://NAME: Info.plist CFBundleURLTypes, the Android intent filter) does. If the page is
-        // still in front 1.5 s later, Yo is not installed: iPhone goes to TestFlight, Android says soon. A computer
+        // still in front 1.5 s later, Yo is not installed: iPhone goes to TestFlight, Android to the beta group. A computer
         // has no Yo: it points at the QR code for the phone.
         open.addEventListener('click', (event) => {
           if (!iphone && !android) {
