@@ -27,4 +27,5 @@ export const services = [
 export const lastUpdated = {
   privacy: 'November 20, 2026',
   imprint: 'November 16, 2026',
+  terms: 'November 24, 2026',
 };

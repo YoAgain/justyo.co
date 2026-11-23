@@ -1,0 +1,49 @@
+---
+// Terms: the few rules for using Yo, only what App Review Guideline 1.2 asks (zero tolerance for objectionable content
+// and abusive users, report and block, reports acted on within 24 hours, contact). Who runs Yo comes from
+// src/data/legal.ts, as on the privacy page and the imprint.
+import Footer from '../../components/Footer.astro';
+import Head from '../../components/Head.astro';
+import Header from '../../components/Header.astro';
+import { operator, lastUpdated } from '../../data/legal';
+const description = 'Yo Terms: zero tolerance for abuse, report and block, and what we do about reports.';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <Head title="Yo – Terms" description={description} path="/p/terms" />
+    <style>
+      html, body { margin: 0; background: #9B59B6; color: #fff; }
+      body { font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      main { max-width: 680px; margin: 0 auto; padding: 84px 20px 24px; min-height: 100vh; min-height: 100svh; box-sizing: border-box; display: flex; flex-direction: column; }
+      h1 { font-family: 'Montserrat', sans-serif; font-size: 44px; margin: 0 0 4px; }
+      p, li { margin: 10px 0; }
+      ul { padding-left: 22px; }
+      a { color: #fff; text-underline-offset: 3px; }
+      .muted { opacity: 0.8; font-size: 14px; }
+      @media (max-width: 540px) { h1 { font-size: 34px; } }
+    </style>
+  </head>
+  <body>
+    <Header />
+    <main>
+      <h1><a href="/" style="text-decoration:none">Yo</a> – Terms</h1>
+      <p class="muted">Updated: {lastUpdated.terms}</p>
+
+      <p>By using Yo you agree to these terms. Yo is run by {operator.name}, see the <a href="/p/imprint">imprint</a>.</p>
+      <ul>
+        <li><b>Zero tolerance.</b> No objectionable content and no abusive users: no harassment, threats, hate, sexual
+          content involving minors, unwanted nudity, spam or anything illegal, in names, groups, photos or videos.</li>
+        <li><b>Report and block.</b> In the app you can report anyone and block them; you then no longer get their Yos.</li>
+        <li><b>We act within 24 hours.</b> We look at every report within 24 hours and remove the accounts of people who
+          break these terms, with everything of theirs still on our server. Yos are end-to-end encrypted, so we can’t
+          read them: we act on reports and on what we can see, such as names.</li>
+        <li><b>Apple’s EULA.</b> From the App Store, Apple’s <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/">standard
+          EULA</a> applies too.</li>
+        <li><b>Law.</b> German law applies, without taking away the consumer protections of your own country.</li>
+      </ul>
+      <p>Contact: <a href={`mailto:${operator.email}`}>{operator.email}</a></p>
+      <Footer />
+    </main>
+  </body>
+</html>
