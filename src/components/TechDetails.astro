@@ -119,6 +119,21 @@ const yo = (text: string) =>
       if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) d.close();
     }),
   );
+  // A link to justyo.co/#technical-details opens the pop-up directly; closing it drops the hash again.
+  const tech = document.getElementById('tech-details') as HTMLDialogElement | null;
+  if (tech) {
+    const openFromHash = () => {
+      if (location.hash === '#technical-details' && !tech.open) {
+        document.getElementById('security')?.scrollIntoView();
+        tech.showModal();
+      }
+    };
+    openFromHash();
+    addEventListener('hashchange', openFromHash);
+    tech.addEventListener('close', () => {
+      if (location.hash === '#technical-details') history.replaceState(null, '', '#security');
+    });
+  }
 </script>
 <style>
   /* the pop-up: one soft purple card like the site's tiles; the topics as small tiles flowing in up to three columns */
