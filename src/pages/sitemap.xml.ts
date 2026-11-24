@@ -12,9 +12,7 @@ export const GET: APIRoute = async () => {
     { path: '/p/story' },
     { path: '/p/changelog', lastmod: posts[0] && iso(posts[0].data.date) },
     ...posts.map((e) => ({ path: `/p/changelog/${e.slug}`, lastmod: iso(e.data.date) })),
-    { path: '/p/imprint' },
-    { path: '/p/privacy' },
-    { path: '/p/terms' },
+    { path: '/legal' },
   ];
   const urls = pages
     .map(({ path, lastmod }) => `  <url><loc>${site}${path}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`)

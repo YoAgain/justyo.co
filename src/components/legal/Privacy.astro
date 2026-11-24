@@ -1,0 +1,82 @@
+---
+import WhoRunsYo from '../WhoRunsYo.astro';
+import { operator, owner, services, lastUpdated } from '../../data/legal';
+// The services, split: the ones behind the app and the Yo Hub, and the ones behind this website.
+const roles: Record<string, string> = {
+  Hetzner: 'runs the Yo Hub · Germany',
+  Cloudflare: 'connection to the Yo Hub, sees IPs · International',
+  Apple: 'iPhone only: push, TestFlight, App Store · International',
+  Google: 'Android from Google Play only: push (Firebase Cloud Messaging), Google Play, Android backup (Block Store) · International',
+  GitHub: 'hosts this site, IP addresses in its logs · USA · legitimate interest',
+  YouTube: 'Story videos, only after you click one · International',
+};
+const appServices = services.filter((x) => ['Hetzner', 'Cloudflare', 'Apple', 'Google'].includes(x.name));
+const siteServices = services.filter((x) => ['GitHub', 'YouTube'].includes(x.name));
+// Where the app's data is: on the Yo Hub (Yo's server), or only on your phone. Each row: what it is, how long it is kept, and (on the
+// server) the legal basis. 🔒 marks what is encrypted (we cannot read it).
+type Row = [name: string, what: string, kept: string, law?: string];
+const server: Row[] = [
+  ['User id & keys', 'name, push token', 'until deletion', 'b'],
+  ['🔒 Backup & settings', 'to restore', 'until deletion', 'b'],
+  ['🔒 Waiting Yos', 'photos, videos', 'max. 30 days', 'b'],
+];
+// the small print: support, and keeping Yo safe and working
+const serverMinor: Row[] = [
+  ['Feedback', 'only if you send it', 'until handled', 'b'],
+  ['IP address', 'against abuse', 'memory only', 'f'],
+  ['Request & upload limits', 'per account', '2 days', 'f'],
+  ['Crash reports', 'anonymous · off in Settings', 'max. 90 days', 'f'],
+];
+const law: Record<string, string> = { b: 'needed for Yo', f: 'legitimate interest' };
+const phone: Row[] = [
+  ['🔒 Keys & friends', 'your account', 'until sign-out'],
+  ['🔒 Passkey & recovery key', 'only yours', 'until deletion'],
+  ['🔒 iCloud Keychain (iPhone)', 'restores your account', 'until deletion'],
+  ['🔒 Google Block Store (Android)', 'restores your account', 'until deletion'],
+  ['Photos & videos', 'not in backups', 'seen once'],
+];
+---
+<section id="privacy" class="legal-section">
+  <h2>Privacy</h2>
+  <p class="muted">Updated: {lastUpdated.privacy}</p>
+
+
+    <h3 class="sub">Who runs Yo</h3>
+    <WhoRunsYo />
+    <p>The operator takes care of your data under this policy and answers for it.</p>
+
+    <h3 class="sub" id="server">Yo Hub server</h3>
+    <table class="t">
+      <tbody>{server.map(([n, w, k, l]) => <tr><td class="n">{n}</td><td class="d"><span>{w}</span> · <span>{k}</span>{l && <> · <span class="law">{law[l]}</span></>}</td></tr>)}</tbody>
+    </table>
+    <table class="t minor">
+      <tbody>{serverMinor.map(([n, w, k, l]) => <tr><td class="n">{n}</td><td class="d"><span>{w}</span> · <span>{k}</span>{l && <> · <span class="law">{law[l]}</span></>}</td></tr>)}</tbody>
+    </table>
+    <p class="note">🔒 encrypted, we can’t read it · GDPR: needed for Yo = Art. 6(1)(b), legitimate interest = Art. 6(1)(f)</p>
+
+    <h3 class="sub" id="iphone">On your phone (iPhone or Android)</h3>
+    <table class="t">
+      <tbody>{phone.map(([n, w, k, l]) => <tr><td class="n">{n}</td><td class="d"><span>{w}</span> · <span>{k}</span>{l && <> · <span class="law">{law[l]}</span></>}</td></tr>)}</tbody>
+    </table>
+
+    <h3 class="sub" id="services">Services for the app</h3>
+    <table class="t">
+      <tbody>{appServices.map((x) => <tr><td class="n"><a href={x.url}>{x.name}</a></td><td class="d">{roles[x.name]}</td></tr>)}</tbody>
+    </table>
+
+    <h3 class="sub" id="website">This website</h3>
+    <table class="t">
+      <tbody>
+        {siteServices.map((x) => <tr><td class="n"><a href={x.url}>{x.name}</a></td><td class="d">{roles[x.name]}</td></tr>)}
+        <tr><td class="n">Cookies &amp; analytics</td><td class="d">none</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub" id="delete">Delete your Yo account</h3>
+    <p>In the app: open your profile, tap <b>Account</b>, then <b>Delete Your Account</b>. Without the app on your phone: install Yo again, sign in with your passkey or Recovery Key and delete it there. If that is not possible, write to <a href={`mailto:${operator.email}`}>{operator.email}</a>; we delete it once we can tell it is yours.</p>
+    <p>Deleted at once, on the Yo Hub: your username, keys and devices, waiting Yos with their photos and videos, your encrypted backup and settings, and reports about you. Kept: support messages and crash reports, which carry a random install id and no account (crash reports up to 90 days). On your phone, deleting the app removes the rest.</p>
+
+    <h3 class="sub">Your rights</h3>
+    <p>Access, correction, deletion, restriction, portability and objection: <a href={`mailto:${operator.email}`}>{operator.email}</a>.</p>
+    <p>Complain to a supervisory authority, including <a href="https://www.ldi.nrw.de/kontakt/ihre-beschwerde">LDI NRW</a>.</p>
+</section>

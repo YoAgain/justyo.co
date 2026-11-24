@@ -1,0 +1,14 @@
+---
+// Imprint (Impressum): who provides this site (§ 5 DDG) and who is responsible for its content (§ 18 Abs. 2 MStV).
+import WhoRunsYo from '../WhoRunsYo.astro';
+import { lastUpdated } from '../../data/legal';
+---
+<section id="imprint" class="legal-section">
+  <h2>Imprint</h2>
+  <p class="muted">Last updated: {lastUpdated.imprint}</p>
+
+  <WhoRunsYo />
+
+  <p class="muted note">Provider under Section 5 DDG and responsible for content under Section 18(2) MStV.
+    <a href="#privacy">Privacy policy</a></p>
+</section>
