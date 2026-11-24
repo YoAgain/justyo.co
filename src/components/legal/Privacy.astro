@@ -1,5 +1,4 @@
 ---
-import WhoRunsYo from '../WhoRunsYo.astro';
 import { operator, owner, services, lastUpdated } from '../../data/legal';
 // The services, split: the ones behind the app and the Yo Hub, and the ones behind this website.
 const roles: Record<string, string> = {
@@ -41,9 +40,8 @@ const phone: Row[] = [
   <p class="muted">Updated: {lastUpdated.privacy}</p>
 
 
-    <h3 class="sub">Who runs Yo</h3>
-    <WhoRunsYo />
-    <p>The operator takes care of your data under this policy and answers for it.</p>
+    <p>The operator named in the <a href="#imprint">imprint</a> takes care of your data under this policy and answers
+      for it. Questions about your data: <a href={`mailto:${operator.email}`}>{operator.email}</a>.</p>
 
     <h3 class="sub" id="server">Yo Hub server</h3>
     <table class="t">
