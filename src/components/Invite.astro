@@ -187,7 +187,7 @@ const { service } = Astro.props;
         const { request, url } = await answer.json();
         if (own !== asking) return;
         if (request === 'over') return over('Too late. Begin again.');
-        if (request === 'allowed') {
+        if (request === 'allowed' || request === 'declined') {
           if (typeof url !== 'string' || !url.startsWith(back + '?')) return over('Nothing to connect.');
           done = true;
           forget();
