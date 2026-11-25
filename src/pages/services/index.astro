@@ -1,0 +1,64 @@
+---
+// justyo.co/services: the bots and the services Yo connects with, as rows like the app's list, from api.justyo.app.
+import Footer from '../../components/Footer.astro';
+import Head from '../../components/Head.astro';
+import Header from '../../components/Header.astro';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <Head title="Yo Services" description="Bots to Yo, and services to connect Yo with." path="/services" />
+    <style is:global>
+      html, body { margin: 0; background: #9B59B6; color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 500; }
+      body { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; }
+      main { flex: 1; padding-top: 108px; text-align: center; }
+      h1 { margin: 0; font-size: clamp(2.6rem, 9vw, 4.5rem); font-weight: 900; line-height: 1; }
+      .lead { margin: 16px 16px 40px; font-size: 18px; }
+      .list a { min-height: 148px; box-sizing: border-box; padding: 20px 16px; display: flex; align-items: center; justify-content: center; gap: 22px; color: #fff; text-decoration: none; transition: filter .15s; }
+      .list a:hover { filter: brightness(1.07); }
+      .list a:focus-visible { outline: 3px solid #fff; outline-offset: -6px; }
+      .list img { width: 72px; height: 72px; border-radius: 17px; flex: none; }
+      .list b { display: block; font-size: clamp(1.9rem, 6vw, 3rem); font-weight: 900; line-height: 1.1; overflow-wrap: anywhere; }
+      .list span { display: block; margin-top: 4px; font-size: 16px; }
+      .foot { max-width: 680px; width: 100%; box-sizing: border-box; margin: 0 auto; padding: 0 20px 24px; }
+    </style>
+  </head>
+  <body>
+    <Header />
+    <main>
+      <h1>Services</h1>
+      <p class="lead" id="lead">Bots to Yo, and services to connect Yo with.</p>
+      <div class="list" id="list"></div>
+    </main>
+    <div class="foot"><Footer /></div>
+    <script>
+      const API = 'https://api.justyo.app';
+      const COLORS = ['#1ABC9C', '#2ECC71', '#3498DB', '#34495E', '#16A085', '#2980B9'];
+      const rows = document.getElementById('list')!;
+      try {
+        const answer = await fetch(`${API}/services`, { referrerPolicy: 'no-referrer', credentials: 'omit' });
+        if (!answer.ok) throw new Error();
+        const services: { name: string; about: string; logo: string | null }[] = await answer.json();
+        rows.replaceChildren(...services.map((service, i) => {
+          const row = document.createElement('a'), text = document.createElement('div');
+          const name = document.createElement('b'), about = document.createElement('span');
+          row.href = `/services/${encodeURIComponent(service.name.toLowerCase())}`;
+          row.style.background = COLORS[i % COLORS.length];
+          name.textContent = service.name;
+          about.textContent = service.about;
+          text.append(name, about);
+          if (service.logo) {
+            const logo = document.createElement('img');
+            logo.alt = '';
+            logo.src = API + service.logo;
+            row.append(logo);
+          }
+          row.append(text);
+          return row;
+        }));
+      } catch {
+        document.getElementById('lead')!.textContent = 'Try again later.';
+      }
+    </script>
+  </body>
+</html>

@@ -12,6 +12,7 @@ export const GET: APIRoute = async () => {
     { path: '/p/story' },
     { path: '/p/changelog', lastmod: posts[0] && iso(posts[0].data.date) },
     ...posts.map((e) => ({ path: `/p/changelog/${e.slug}`, lastmod: iso(e.data.date) })),
+    { path: '/services' },
     { path: '/legal' },
   ];
   const urls = pages

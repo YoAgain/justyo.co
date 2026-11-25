@@ -4,10 +4,13 @@
 // do not (Safari on this site, a typed link) "Open in Yo" does, with the app's scheme; without Yo it leads on to
 // the store. The name is read in the browser only; nothing is sent anywhere.
 //
+// justyo.co/services and /services/NAME are Service.astro's.
+//
 // One screen, flat as the app's list: the name as a coloured row (the app's palette, picked by the name), "wants to
 // Yo", the QR code with "Yo" in its centre (for a phone across the room; smaller on a phone, which cannot scan its
 // own screen), and one row as wide as the code: Open in Yo and the two stores.
 import Head from '../components/Head.astro';
+import Service from '../components/Service.astro';
 import { stores } from '../data/stores';
 ---
 <!doctype html>
@@ -54,6 +57,7 @@ import { stores } from '../data/stores';
       </div>
       <p class="hint" id="hint"></p>
     </main>
+    <Service />
     <main class="lost" id="lost">
       <h1>Nothing here.</h1>
       <p><a href="/">justyo.co</a></p>
