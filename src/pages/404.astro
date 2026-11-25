@@ -8,6 +8,7 @@
 // code of 216 with 42 around it and "Yo" in its centre, the link at most 40 and fitted to 300), drawn here in
 // container units so it scales with the window. The QR code is always shown, for a phone across the room.
 import Head from '../components/Head.astro';
+import { stores } from '../data/stores';
 ---
 <!doctype html>
 <html lang="en">
@@ -57,7 +58,7 @@ import Head from '../components/Head.astro';
       [hidden] { display: none !important; }
     </style>
   </head>
-  <body>
+  <body data-iphone={stores.iphone}>
     <main>
       <div class="column">
         <div id="invite" hidden>
@@ -67,7 +68,7 @@ import Head from '../components/Head.astro';
             <div class="link"><span id="link"></span></div>
           </div>
           <a class="button" id="open" href="#">Open in Yo</a>
-          <p class="soon" id="android" hidden>Yo for Android is in beta: <a href="https://groups.google.com/g/yo-android-testers">join here</a>, then open this link again.</p>
+          <p class="soon" id="android" hidden>Yo for Android is in beta: <a href={stores.android}>join here</a>, then open this link again.</p>
           <p class="soon" id="scan" hidden>Scan the code with your phone to open it in Yo.</p>
         </div>
         <div id="lost">
@@ -79,7 +80,7 @@ import Head from '../components/Head.astro';
     <script>
       import qrcode from 'qrcode-generator';
 
-      const TESTFLIGHT = 'https://testflight.apple.com/join/V3wa1DeX';
+      const TESTFLIGHT = document.body.dataset.iphone!;
       const $ = (id: string) => document.getElementById(id)!;
 
       // A username (spec 3.3): up to 16 characters of letters, digits, _ and emoji, in one path part. The least is the

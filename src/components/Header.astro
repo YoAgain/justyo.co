@@ -9,6 +9,7 @@ const items = [
   { href: '/p/changelog', label: 'New' },
 ];
 const parts = (label: string) => label.split(/([yo])/i).filter(Boolean);
+import { stores } from '../data/stores';
 ---
 <header class="site">
   <nav aria-label="Main">
@@ -19,10 +20,10 @@ const parts = (label: string) => label.split(/([yo])/i).filter(Boolean);
     ))}
   </nav>
   <div class="ends">
-    <a class="pill store" href="https://testflight.apple.com/join/V3wa1DeX" target="_blank" rel="noopener" aria-label="Get the iPhone beta on TestFlight" title="iPhone beta (TestFlight)">
+    <a class="pill store" href={stores.iphone} target="_blank" rel="noopener" aria-label="Get the iPhone beta on TestFlight" title="iPhone beta (TestFlight)">
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M16.37 12.6c-.02-2.3 1.88-3.4 1.97-3.46-1.07-1.57-2.74-1.78-3.33-1.8-1.42-.14-2.77.83-3.49.83-.72 0-1.83-.81-3.01-.79-1.55.02-2.98.9-3.78 2.29-1.61 2.8-.41 6.94 1.16 9.21.77 1.11 1.68 2.36 2.88 2.31 1.16-.05 1.6-.75 3-.75s1.79.75 3.01.72c1.25-.02 2.04-1.13 2.8-2.24.88-1.29 1.24-2.53 1.26-2.6-.03-.01-2.42-.93-2.47-3.72zM14.07 5.85c.64-.77 1.07-1.85.95-2.92-.92.04-2.03.61-2.69 1.38-.59.68-1.11 1.77-.97 2.83 1.02.08 2.07-.52 2.71-1.29z"/></svg><span>iPhone</span>
     </a>
-    <a class="pill store" href="https://groups.google.com/g/yo-android-testers" target="_blank" rel="noopener" aria-label="Join the Android beta on Google Play" title="Android beta (Google Play)">
+    <a class="pill store" href={stores.android} target="_blank" rel="noopener" aria-label="Join the Android beta on Google Play" title="Android beta (Google Play)">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M4.6 2.3c-.3.3-.5.8-.5 1.4v16.6c0 .6.2 1.1.5 1.4l9.3-9.7zM15.1 13.2l2.9 3-11.2 6.3c-.5.3-1 .3-1.4.1zM15.1 10.8 5.4 1.4c.4-.2.9-.2 1.4.1l11.2 6.3zM19.1 8.5l2.4 1.4c.9.5.9 1.8 0 2.3l-2.4 1.4-3.2-3.3z"/></svg><span>Android</span>
     </a>
     <a class="ic" href="https://x.com/YoApp" target="_blank" rel="noopener" aria-label="Yo on X" title="@YoApp on X">
