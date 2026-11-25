@@ -8,7 +8,7 @@
 // learns which one is looked at); what is not in the list is nothing here. With ?state=… it connects the service (OAuth 2,
 // RFC 6749): `state` is the code too. The app, opened by the button or the QR code, tells its hash to the service's
 // account once the user allowed it; Continue takes it back to the other side, to the address of the list, never one of
-// the link.
+// the link. Without it a service that connects shows where that begins (its help_url).
 //
 // One screen, flat as the app's list: the name as a coloured row (the app's palette, picked by the name), "wants to
 // Yo", the QR code with "Yo" in its centre (for a phone across the room; smaller on a phone, which cannot scan its
@@ -28,7 +28,7 @@ import { stores } from '../data/stores';
         display: flex; flex-direction: column; align-items: center; justify-content: center;
       }
       .row { width: 100%; box-sizing: border-box; padding: calc(var(--gap) * .5) 16px; text-align: center; overflow: hidden; }
-      .name { display: inline-block; white-space: nowrap; line-height: 1; font-size: 64px; }
+      .name { display: inline-block; white-space: nowrap; line-height: 1; }
       .wants { margin-top: calc(var(--gap) * .5); font-size: 22px; line-height: 1; }
       .card { margin-top: calc(var(--gap) * .8); padding: 18px; background: #fff; box-shadow: 0 8px 30px rgba(0, 0, 0, .12); }
       .card svg { display: block; width: min(64vw, 34svh, 300px); height: auto; }
@@ -40,8 +40,11 @@ import { stores } from '../data/stores';
       .store { width: 58px; flex: none; background: rgba(0, 0, 0, .22); }
       #back { margin-top: 6px; }
       .continue { flex: 1; background: rgba(0, 0, 0, .22); font-size: clamp(17px, 2.6vh, 22px); white-space: nowrap; }
-      .logo { display: block; width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 15px; }
+      .logo { width: 1em; height: 1em; border-radius: .23em; flex: none; }
+      .title { display: inline-flex; align-items: center; gap: .3em; line-height: 1; font-size: 64px; }
       .connect .card svg { width: min(64vw, 28svh, 300px); }
+      .help .open { font-size: clamp(15px, 2.2vh, 20px); }
+      .help .store { display: none; }
       .store svg { width: 20px; height: 20px; }
       a:focus-visible { outline: 2px solid #F1C40F; outline-offset: 3px; }
       .hint { margin: 14px 16px 0; font-size: .95rem; opacity: .85; text-align: center; min-height: 1.2em; }
@@ -54,7 +57,7 @@ import { stores } from '../data/stores';
   </head>
   <body data-iphone={stores.iphone} data-android={stores.android}>
     <main id="invite" hidden>
-      <div class="row" id="row"><img class="logo" id="logo" alt="" hidden /><span class="name" id="name"></span></div>
+      <div class="row" id="row"><span class="title" id="title"><img class="logo" id="logo" alt="" hidden /><span class="name" id="name"></span></span></div>
       <div class="wants" id="wants">wants to Yo</div>
       <div class="card" role="img" id="card"><svg id="qrcode" viewBox="0 0 260 260"></svg></div>
       <div class="actions" id="actions">
@@ -84,7 +87,7 @@ import { stores } from '../data/stores';
       // A digit may come first ("1abc"), but a name has a letter or emoji: "404" is no invite.
       // A row with `part`, a line below it, the QR code of `link`, and a button to `app`.
       function show(part: string, line: string, link: string, app: string) {
-        const name = $('name');
+        const name = $('name'), title = $('title');
         name.textContent = part;
         $('card').setAttribute('aria-label', `QR code for ${part}: ${link}`);
         $('invite').hidden = false;
@@ -128,9 +131,9 @@ import { stores } from '../data/stores';
           svg.style.width = (width - 36) + 'px';
           $('back').style.width = width + 'px';
           const max = $('row').clientWidth - 32;
-          name.style.fontSize = '100px';
-          const size = Math.round(Math.max(14, Math.min(180, innerHeight * 0.12, Math.floor(max * 100 / name.getBoundingClientRect().width))));
-          name.style.fontSize = size + 'px';
+          title.style.fontSize = '100px';
+          const size = Math.round(Math.max(14, Math.min(180, innerHeight * 0.12, Math.floor(max * 100 / title.getBoundingClientRect().width))));
+          title.style.fontSize = size + 'px';
           $('wants').style.fontSize = Math.max(20, Math.round(Math.min(size, 120) * 0.34)) + 'px';
         };
         fit();
@@ -143,6 +146,8 @@ import { stores } from '../data/stores';
         const iphone = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
         const open = $('open') as HTMLAnchorElement;
         open.href = app;
+        // A web address: nothing of Yo to open.
+        if (app.startsWith('https:')) return;
 
         // Universal and App Links do not fire for a link opened inside Safari on its own site, typed or pasted; the
         // app's own scheme (yo://NAME: Info.plist CFBundleURLTypes, the Android intent filter) does. If the page is
@@ -165,7 +170,7 @@ import { stores } from '../data/stores';
         });
       }
 
-      type Service = { name: string; about: string; bridge: { return_url: string } | null; logo: string | null };
+      type Service = { name: string; about: string; bridge: { return_url: string; help_url?: string } | null; logo: string | null };
       const API = 'https://api.justyo.app';
 
       async function service(wanted: string) {
@@ -179,6 +184,14 @@ import { stores } from '../data/stores';
           $('logo').hidden = false;
         }
         const asked = new URLSearchParams(location.search), state = asked.get('state');
+        const help = bridge?.help_url ?? '';
+        if (!state && /^https:\/\/[a-z0-9.-]+\/[A-Za-z0-9._\/-]+$/.test(help)) {
+          // Only the other side can begin to connect: its address, as the code and to read.
+          $('invite').classList.add('help');
+          $('open').textContent = help.slice('https://'.length);
+          show(name, about, help, help);
+          return;
+        }
         if (!state) {
           show(name, about, 'https://justyo.co/' + encodeURIComponent(name), 'yo://' + encodeURIComponent(name));
           return;
