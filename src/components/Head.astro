@@ -8,7 +8,9 @@
 //   description  the meta description, also the share description
 //   path         the page's own path, e.g. "/p/story": the canonical URL and og:url are https://justyo.co + path; a
 //                page without one (the 404 page, which answers at every unknown path) gets neither, nor share tags
-//   image        the share image, a path or URL (default: /og-image.png, 1200 x 630); imageAlt describes it
+//   image        the share image, a path or URL (default: /og-image.png; it and those in /og/ are 1200 x 630); imageAlt
+//                describes it
+//   share        share tags even without a path (the invite page, the 404 page at justyo.co/NAME): all but og:url
 //   type         og:type: 'website' (default) or 'article'
 //   noindex      tells search engines not to index the page
 //   weights      the Montserrat weights the page declares (default 500;700;900); the browser only downloads a weight
@@ -25,6 +27,7 @@ interface Props {
   path?: string;
   image?: string;
   imageAlt?: string;
+  share?: boolean;
   type?: 'website' | 'article';
   noindex?: boolean;
   weights?: string;
@@ -35,6 +38,7 @@ const {
   path,
   image = '/og-image.png',
   imageAlt,
+  share = false,
   type = 'website',
   noindex = false,
   weights = '500;700;900',
@@ -42,8 +46,9 @@ const {
 const site = 'https://justyo.co';
 const url = path === undefined ? undefined : new URL(path, site).href;
 const shareImage = new URL(image, site).href;
-// Only the default share image has a size known here.
+// The site's own share images (the default and those in /og/) are 1200 x 630.
 const isDefaultImage = image === '/og-image.png';
+const isOwnImage = isDefaultImage || image.startsWith('/og/');
 const alt = imageAlt ?? (isDefaultImage ? "Yo. It's that simple." : undefined);
 // The Montserrat files per weight, latin and latin-ext, with the unicode ranges Fontsource gives them.
 const latin = 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD';
@@ -68,16 +73,16 @@ const fontCss = weights.split(';').filter((w) => w in files)
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
-{url && (
+{(url || share) && (
   <>
     <meta property="og:type" content={type} />
     <meta property="og:site_name" content="Yo" />
-    <meta property="og:url" content={url} />
+    {url && <meta property="og:url" content={url} />}
     <meta property="og:title" content={title} />
     {description && <meta property="og:description" content={description} />}
     <meta property="og:image" content={shareImage} />
-    {isDefaultImage && <meta property="og:image:width" content="1200" />}
-    {isDefaultImage && <meta property="og:image:height" content="630" />}
+    {isOwnImage && <meta property="og:image:width" content="1200" />}
+    {isOwnImage && <meta property="og:image:height" content="630" />}
     {alt && <meta property="og:image:alt" content={alt} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
