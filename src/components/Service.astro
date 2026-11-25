@@ -15,10 +15,12 @@
   <a class="act second" id="serviceContinue" href="#" hidden>Allowed? Continue</a>
 </main>
 <style is:global>
-  #services { height: auto; min-height: 100svh; overflow: visible; gap: 22px; text-align: center; padding: 24px 0; }
+  #services { box-sizing: border-box; min-height: 100vh; min-height: 100svh; padding: 24px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center; }
+  #services [hidden], #services[hidden] { display: none; }
+  #services h1 { margin: 0 16px; font-size: clamp(2rem, 7vw, 3.2rem); font-weight: 900; line-height: 1.1; }
   #services p { margin: 0 16px; max-width: 26rem; line-height: 1.4; }
-  #services .card { margin: 0; }
-  #services .card svg { width: min(60vw, 34svh, 280px); }
+  #services .card { padding: 18px; background: #fff; }
+  #services .card svg { display: block; height: auto; width: min(60vw, 34svh, 280px); }
   .logos { display: flex; align-items: center; gap: 14px; font-size: 26px; font-weight: 900; }
   .logos i { display: flex; width: 76px; height: 76px; border-radius: 18px; align-items: center; justify-content: center; background: rgba(0, 0, 0, .22); font-style: normal; }
   .logos img { width: 76px; height: 76px; border-radius: 18px; }
