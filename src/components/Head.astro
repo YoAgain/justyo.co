@@ -8,8 +8,8 @@
 //   description  the meta description, also the share description
 //   path         the page's own path, e.g. "/p/story": the canonical URL and og:url are https://justyo.co + path; a
 //                page without one (the 404 page, which answers at every unknown path) gets neither, nor share tags
-//   image        the share image, a path or URL (default: /og-image.png; it and those in /og/ are 1200 x 630); imageAlt
-//                describes it
+//   image        the share image, a path or URL; imageAlt describes it. Default: /og/<path>.png with the alt
+//                "Yo | <the title without Yo>", drawn at build time from that alt (og-images.mjs), 1200 x 630
 //   share        share tags even without a path (the invite page, the 404 page at justyo.co/NAME): all but og:url
 //   type         og:type: 'website' (default) or 'article'
 //   noindex      tells search engines not to index the page
@@ -36,7 +36,7 @@ const {
   title,
   description,
   path,
-  image = '/og-image.png',
+  image: imageProp,
   imageAlt,
   share = false,
   type = 'website',
@@ -45,11 +45,13 @@ const {
 } = Astro.props;
 const site = 'https://justyo.co';
 const url = path === undefined ? undefined : new URL(path, site).href;
+// The title without the site's name ("Yo – Story", "Something new – Yo"): the text of the drawn share image.
+const text = title.replace(/^Yo – /, '').replace(/ – Yo$/, '');
+const image = imageProp ?? `/og${path === '/' || path === undefined ? '/index' : path}.png`;
 const shareImage = new URL(image, site).href;
-// The site's own share images (the default and those in /og/) are 1200 x 630.
-const isDefaultImage = image === '/og-image.png';
-const isOwnImage = isDefaultImage || image.startsWith('/og/');
-const alt = imageAlt ?? (isDefaultImage ? "Yo. It's that simple." : undefined);
+// The site's own share images (in /og/, drawn at build time) are 1200 x 630.
+const isOwnImage = image.startsWith('/og/');
+const alt = imageAlt ?? (isOwnImage ? `Yo | ${text}` : undefined);
 // The Montserrat files per weight, latin and latin-ext, with the unicode ranges Fontsource gives them.
 const latin = 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD';
 const latinExt = 'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF';

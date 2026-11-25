@@ -17,7 +17,7 @@ const { title, date, image, alt } = entry.data;
 const path = `/p/changelog/${entry.slug}`;
 const url = `https://justyo.co${path}`;
 const description = excerpt(entry.body) || `${title} – what's new in Yo.`;
-const shareImage = new URL(image ?? '/og-image.png', 'https://justyo.co').href;
+const shareImage = new URL(image ?? `/og${path}.png`, 'https://justyo.co').href;
 const ld = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
