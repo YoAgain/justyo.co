@@ -2,85 +2,66 @@
 // Every path the site has no page for lands here (GitHub Pages serves 404.html). justyo.co/NAME is a Yo invite:
 // with Yo installed iOS and Android open the app for it (apple-app-site-association, assetlinks.json); where they
 // do not (Safari on this site, a typed link) "Open in Yo" does, with the app's scheme; without Yo it leads on to
-// TestFlight. The name is read in the browser only; nothing is sent anywhere.
+// the store. The name is read in the browser only; nothing is sent anywhere.
 //
-// The invite is the app's share card (YourCode.swift, ContactCodeCard: 360 x 450 points, the name at 32, a white QR
-// code of 216 with 42 around it and "Yo" in its centre, the link at most 40 and fitted to 300), drawn here in
-// container units so it scales with the window. The QR code is always shown, for a phone across the room.
+// One screen, flat as the app's list: the name as a coloured row (the app's palette, picked by the name), "wants to
+// Yo", the QR code with "Yo" in its centre (for a phone across the room; smaller on a phone, which cannot scan its
+// own screen), and one row as wide as the code: Open in Yo and the two stores.
 import Head from '../components/Head.astro';
 import { stores } from '../data/stores';
 ---
 <!doctype html>
 <html lang="en">
   <head>
-    <Head title="Yo" noindex weights="700" share image="/og/invite.png" imageAlt="Yo | Yo me on Yo." />
+    <Head title="Yo" noindex weights="700;900" share image="/og/invite.png" imageAlt="Yo | Yo me on Yo." />
     <style>
       html, body { margin: 0; height: 100%; background: #9B59B6; color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 700; }
+      :root { --gap: clamp(20px, 4.5vh, 36px); }
       main {
-        min-height: 100%; box-sizing: border-box; padding: 1rem; display: flex; align-items: center;
-        justify-content: center;
+        height: 100vh; height: 100svh; overflow: hidden; box-sizing: border-box; padding: 16px 0;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
       }
-      .column {
-        width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
-        text-align: center;
-      }
-      .column > div { display: contents; }
-      h1 { margin: 0; width: 100%; text-align: center; font-size: clamp(1.5rem, 6vw, 2.5rem); line-height: 1.2; overflow-wrap: anywhere; }
-      p { margin: 0; font-size: 1.05rem; line-height: 1.45; opacity: .9; }
-      /* The card: 360 x 450 in the app; 1cqw is 3.6 of its points. The height left for it is the window less the
-         padding, the gap and the button. */
-      .card {
-        container-type: inline-size; box-sizing: border-box; aspect-ratio: 360 / 450;
-        width: min(100%, 480px, calc((100svh - 2rem - 1.25rem - 4rem) * 0.8));
-        display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-        background: #9B59B6; overflow: hidden;
-      }
-      .card .who {
-        box-sizing: border-box; width: 100%; padding: 6.667cqw 6.667cqw 0; font-size: 8.889cqw; line-height: 1.22;
-        overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
-      }
-      .card .code { position: relative; width: 60cqw; height: 60cqw; padding: 11.667cqw; flex: none; }
-      .card .code svg { display: block; width: 100%; height: 100%; }
-      .card .code span {
-        position: absolute; left: 50%; top: 50%; width: 12.222cqw; height: 12.222cqw; transform: translate(-50%, -50%);
-        display: flex; align-items: center; justify-content: center; background: #9B59B6; font-size: 6.667cqw;
-      }
-      .card .link {
-        width: 83.333cqw; height: 11.111cqw; margin: 2.222cqw 0 4.444cqw; display: flex; align-items: center;
-        justify-content: center; white-space: nowrap; font-size: 11.111cqw; line-height: 1;
-      }
-      a.button {
-        display: block; box-sizing: border-box; width: 100%; max-width: 20rem; padding: 1rem 2rem;
-        border-radius: 999px; background: #fff; color: #000; text-decoration: none; font-size: 1.25rem;
-      }
-      a.plain { color: #fff; opacity: .85; }
-      .soon { opacity: .7; font-size: .95rem; margin-top: -.5rem; }
+      .row { width: 100%; box-sizing: border-box; padding: calc(var(--gap) * .5) 16px; text-align: center; overflow: hidden; }
+      .name { display: inline-block; white-space: nowrap; line-height: 1; font-size: 64px; }
+      .wants { margin-top: calc(var(--gap) * .5); font-size: 22px; line-height: 1; }
+      .card { margin-top: calc(var(--gap) * .8); padding: 18px; background: #fff; box-shadow: 0 8px 30px rgba(0, 0, 0, .12); }
+      .card svg { display: block; width: min(64vw, 34svh, 300px); height: auto; }
+      /* A phone cannot scan its own screen: the code smaller there, the button higher. */
+      @media (pointer: coarse) and (max-width: 700px) { .card svg { width: min(44vw, 22svh); } }
+      .actions { margin-top: var(--gap); display: flex; gap: 6px; height: 58px; }
+      .actions a { display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; }
+      .open { flex: 1; padding: 0 30px; background: #2ECC71; font-size: clamp(17px, 2.6vh, 22px); white-space: nowrap; }
+      .store { width: 58px; flex: none; background: rgba(0, 0, 0, .22); }
+      .store svg { width: 20px; height: 20px; }
+      a:focus-visible { outline: 2px solid #F1C40F; outline-offset: 3px; }
+      .hint { margin: 14px 16px 0; font-size: .95rem; opacity: .85; text-align: center; min-height: 1.2em; }
+      .hint a { color: #fff; }
+      h1 { margin: 0; font-size: clamp(1.5rem, 6vw, 2.5rem); }
+      .lost p { margin: 1rem 0 0; text-align: center; }
+      .lost a { color: #fff; opacity: .85; }
       [hidden] { display: none !important; }
     </style>
   </head>
-  <body data-iphone={stores.iphone}>
-    <main>
-      <div class="column">
-        <div id="invite" hidden>
-          <div class="card" role="img" id="card">
-            <div class="who"><span id="name"></span> wants to Yo</div>
-            <div class="code"><div id="qrcode"></div><span aria-hidden="true">Yo</span></div>
-            <div class="link"><span id="link"></span></div>
-          </div>
-          <a class="button" id="open" href="#">Open in Yo</a>
-          <p class="soon" id="android" hidden>Yo for Android is in beta: <a href={stores.android}>join here</a>, then open this link again.</p>
-          <p class="soon" id="scan" hidden>Scan the code with your phone to open it in Yo.</p>
-        </div>
-        <div id="lost">
-          <h1>Nothing here.</h1>
-          <p><a class="plain" href="/">justyo.co</a></p>
-        </div>
+  <body data-iphone={stores.iphone} data-android={stores.android}>
+    <main id="invite" hidden>
+      <div class="row" id="row"><span class="name" id="name"></span></div>
+      <div class="wants" id="wants">wants to Yo</div>
+      <div class="card" role="img" id="card"><svg id="qrcode" viewBox="0 0 260 260"></svg></div>
+      <div class="actions" id="actions">
+        <a class="open" id="open" href="#">Open in Yo</a>
+        <a class="store" href={stores.iphone} aria-label="iPhone beta on TestFlight"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M16.37 12.6c-.02-2.3 1.88-3.4 1.97-3.46-1.07-1.57-2.74-1.78-3.33-1.8-1.42-.14-2.77.83-3.49.83-.72 0-1.83-.81-3.01-.79-1.55.02-2.98.9-3.78 2.29-1.61 2.8-.41 6.94 1.16 9.21.77 1.11 1.68 2.36 2.88 2.31 1.16-.05 1.6-.75 3-.75s1.79.75 3.01.72c1.25-.02 2.04-1.13 2.8-2.24.88-1.29 1.24-2.53 1.26-2.6-.03-.01-2.42-.93-2.47-3.72zM14.07 5.85c.64-.77 1.07-1.85.95-2.92-.92.04-2.03.61-2.69 1.38-.59.68-1.11 1.77-.97 2.83 1.02.08 2.07-.52 2.71-1.29z"/></svg></a>
+        <a class="store" href={stores.android} aria-label="Android beta on Google Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M4.6 2.3c-.3.3-.5.8-.5 1.4v16.6c0 .6.2 1.1.5 1.4l9.3-9.7zM15.1 13.2l2.9 3-11.2 6.3c-.5.3-1 .3-1.4.1zM15.1 10.8 5.4 1.4c.4-.2.9-.2 1.4.1l11.2 6.3zM19.1 8.5l2.4 1.4c.9.5.9 1.8 0 2.3l-2.4 1.4-3.2-3.3z"/></svg></a>
       </div>
+      <p class="hint" id="hint"></p>
+    </main>
+    <main class="lost" id="lost">
+      <h1>Nothing here.</h1>
+      <p><a href="/">justyo.co</a></p>
     </main>
     <script>
       import qrcode from 'qrcode-generator';
 
-      const TESTFLIGHT = document.body.dataset.iphone!;
+      const { iphone: IPHONE, android: ANDROID } = document.body.dataset as { iphone: string; android: string };
       const $ = (id: string) => document.getElementById(id)!;
 
       // A username (spec 3.3): up to 16 characters of letters, digits, _ and emoji, in one path part. The least is the
@@ -92,42 +73,54 @@ import { stores } from '../data/stores';
       // A digit may come first ("1abc"), but a name has a letter or emoji: "404" is no invite.
       if (count >= 1 && count <= 16 && /^[\p{L}\p{M}\p{N}_\p{Extended_Pictographic}\p{Emoji_Component}‍]+$/u.test(part)
           && /[\p{L}\p{Extended_Pictographic}]/u.test(part)) {
-        // The link as the app writes it (Invite.link): https://justyo.co/NAME.
-        const link = 'https://justyo.co/' + part;
-        $('name').textContent = part;
-        $('link').textContent = link;
-        $('card').setAttribute('aria-label', `Contact QR code for ${part}. ${link}`);
+        // The link as the app writes it (Invite.link): https://justyo.co/NAME, the name percent-encoded so a scanner
+        // reads every script (raw UTF-8 in a QR code comes out garbled in some).
+        const link = 'https://justyo.co/' + encodeURIComponent(part);
+        const name = $('name');
+        name.textContent = part;
+        $('card').setAttribute('aria-label', `QR code for ${part}: ${link}`);
         $('invite').hidden = false;
         $('lost').hidden = true;
-        document.title = `${part} wants to Yo you`;
+        document.title = `${part} wants to Yo`;
 
-        // As in the app: error correction H (the "Yo" in the centre covers a part), white modules on amethyst, the
-        // card's own padding as the quiet zone.
+        // The row's colour: the app's palette without its purple, picked by the name's bytes, so a name keeps its colour.
+        const palette = ['#1ABC9C', '#2ECC71', '#3498DB', '#34495E', '#16A085', '#F1C40F', '#2980B9'];
+        const sum = [...new TextEncoder().encode(part)].reduce((a, b) => a + b, 0);
+        $('row').style.background = palette[sum % palette.length];
+
+        // Square modules and eyes in amethyst on white, "Yo" in a cleared centre: error correction H carries it.
         const code = qrcode(0, 'H');
-        code.addData(unescape(encodeURIComponent(link)));
+        code.addData(link);
         code.make();
-        const n = code.getModuleCount();
-        let path = '';
-        for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (code.isDark(y, x)) path += `M${x} ${y}h1v1h-1z`;
-        $('qrcode').innerHTML =
-          `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges"><path fill="#fff" d="${path}"/></svg>`;
+        const c = code.getModuleCount(), m = 260 / c, mid = (c - 1) / 2;
+        const eye = (r: number, k: number) => (r < 7 && k < 7) || (r < 7 && k >= c - 7) || (r >= c - 7 && k < 7);
+        const clear = (r: number, k: number) => Math.abs(r - mid) < c * 0.13 && Math.abs(k - mid) < c * 0.19;
+        let out = '';
+        for (let r = 0; r < c; r++) for (let k = 0; k < c; k++) {
+          if (!code.isDark(r, k) || eye(r, k) || clear(r, k)) continue;
+          out += `<rect x="${k * m + m * .06}" y="${r * m + m * .06}" width="${m * .88}" height="${m * .88}"/>`;
+        }
+        for (const [r, k] of [[0, 0], [0, c - 7], [c - 7, 0]]) {
+          out += `<rect x="${k * m + m / 2}" y="${r * m + m / 2}" width="${m * 6}" height="${m * 6}" fill="none" stroke="#9B59B6" stroke-width="${m}"/>`;
+          out += `<rect x="${k * m + m * 2}" y="${r * m + m * 2}" width="${m * 3}" height="${m * 3}"/>`;
+        }
+        out += `<text x="130" y="130" dy="0.36em" text-anchor="middle" font-family="Montserrat" font-weight="900" font-size="${m * 6.4}">Yo</text>`;
+        $('qrcode').innerHTML = `<g fill="#9B59B6">${out}</g>`;
 
-        // The link shrinks to its box (the app's minimumScaleFactor); the name wraps to two lines and shrinks past that.
-        const fit = (el: HTMLElement, box: HTMLElement, wide: boolean) => {
-          el.style.fontSize = '';
-          box.style.fontSize = '';
-          const fits = () => (wide ? el.scrollWidth <= box.clientWidth : box.scrollHeight <= box.clientHeight + 1);
-          let scale = 1;
-          while (!fits() && scale > 0.1) {
-            scale *= 0.95;
-            (wide ? el : box).style.fontSize = `${(wide ? 11.111 : 8.889) * scale}cqw`;
-          }
+        // The name as large as its row allows (at most 180 px and an eighth of the height, so all fits one screen),
+        // measured in the page itself once Montserrat has loaded; "wants to Yo" a third of it.
+        const fit = () => {
+          $('actions').style.width = $('card').offsetWidth + 'px';
+          const max = $('row').clientWidth - 32;
+          name.style.fontSize = '100px';
+          const size = Math.round(Math.max(14, Math.min(180, innerHeight * 0.12, Math.floor(max * 100 / name.getBoundingClientRect().width))));
+          name.style.fontSize = size + 'px';
+          $('wants').style.fontSize = Math.max(20, Math.round(Math.min(size, 120) * 0.34)) + 'px';
         };
-        const who = document.querySelector('.card .who') as HTMLElement;
-        const layout = () => { fit($('link'), $('link').parentElement!, true); fit(who, who, false); };
-        layout();
-        document.fonts?.ready.then(layout);
-        new ResizeObserver(layout).observe($('card'));
+        fit();
+        document.fonts?.load('700 100px Montserrat', part).then(fit);
+        document.fonts?.ready.then(fit);
+        addEventListener('resize', fit);
 
         const ua = navigator.userAgent;
         const android = /Android/i.test(ua);
@@ -137,21 +130,19 @@ import { stores } from '../data/stores';
 
         // Universal and App Links do not fire for a link opened inside Safari on its own site, typed or pasted; the
         // app's own scheme (yo://NAME: Info.plist CFBundleURLTypes, the Android intent filter) does. If the page is
-        // still in front 1.5 s later, Yo is not installed: iPhone goes to TestFlight, Android to the beta group. A computer
-        // has no Yo: it points at the QR code for the phone.
+        // still in front 1.5 s later, Yo is not installed: on to the store (after installing, Open in Yo again). A
+        // computer has no Yo: it points at the QR code for the phone.
         open.addEventListener('click', (event) => {
           if (!iphone && !android) {
             event.preventDefault();
-            $('scan').hidden = false;
+            $('hint').textContent = 'Scan the code with your phone to open it in Yo.';
             return;
           }
           let timer = 0;
           const cancel = () => { clearTimeout(timer); document.removeEventListener('visibilitychange', cancel); };
           timer = window.setTimeout(() => {
             cancel();
-            if (document.hidden) return;
-            if (iphone) location.href = TESTFLIGHT;
-            else $('android').hidden = false;
+            if (!document.hidden) location.href = iphone ? IPHONE : ANDROID;
           }, 1500);
           document.addEventListener('visibilitychange', () => { if (document.hidden) cancel(); });
           window.addEventListener('pagehide', cancel, { once: true });
