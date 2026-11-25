@@ -1,0 +1,218 @@
+---
+// The screen of an invite, on the 404 page, and of a service, on its own page. justyo.co/NAME is a Yo invite:
+// with Yo installed iOS and Android open the app for it (apple-app-site-association, assetlinks.json); where they
+// do not (Safari on this site, a typed link) "Open in Yo" does, with the app's scheme; without Yo it leads on to
+// the store. The name is read in the browser only; nothing is sent anywhere.
+//
+// justyo.co/services/NAME is the same screen for a service of api.justyo.app (the whole list is asked for, so it never
+// learns which one is looked at); what is not in the list is nothing here. With ?state=… it connects the service (OAuth 2,
+// RFC 6749): `state` is the code too. The app, opened by the button or the QR code, tells its hash to the service's
+// account once the user allowed it; Continue takes it back to the other side, to the address of the list, never one of
+// the link. Without it a service that connects shows where that begins (its help_url).
+//
+// One screen, flat as the app's list: the name as a coloured row (the app's palette, picked by the name), "wants to
+// Yo", the QR code with "Yo" in its centre (for a phone across the room; smaller on a phone, which cannot scan its
+// own screen), and one row as wide as the code: Open in Yo and the two stores.
+import { stores } from '../data/stores';
+interface Props { service?: { name: string; about: string } }
+const { service } = Astro.props;
+---
+<style is:global>
+  html, body { margin: 0; height: 100%; background: #9B59B6; color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 700; }
+  :root { --gap: clamp(20px, 4.5vh, 36px); }
+  main {
+    height: 100vh; height: 100svh; overflow: hidden; box-sizing: border-box; padding: 16px 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .row { width: 100%; box-sizing: border-box; padding: calc(var(--gap) * .5) 16px; text-align: center; overflow: hidden; }
+  .name { display: inline-block; white-space: nowrap; line-height: 1; }
+  .wants { margin-top: calc(var(--gap) * .5); font-size: 22px; line-height: 1; }
+  .card { margin-top: calc(var(--gap) * .8); padding: 18px; background: #fff; box-shadow: 0 8px 30px rgba(0, 0, 0, .12); }
+  .card svg { display: block; width: min(64vw, 34svh, 300px); height: auto; }
+  /* A phone cannot scan its own screen: the code smaller there, the button higher. */
+  @media (pointer: coarse) and (max-width: 700px) { .card svg { width: min(44vw, 22svh); } }
+  .actions { margin-top: var(--gap); display: flex; gap: 6px; height: 58px; width: max-content; }
+  .actions a { display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; }
+  .open { flex: 1; padding: 0 22px; background: #2ECC71; font-size: clamp(17px, 2.6vh, 22px); white-space: nowrap; }
+  .store { width: 58px; flex: none; background: rgba(0, 0, 0, .22); }
+  #back { margin-top: 6px; }
+  .continue { flex: 1; background: rgba(0, 0, 0, .22); font-size: clamp(17px, 2.6vh, 22px); white-space: nowrap; }
+  .logo { width: 1em; height: 1em; border-radius: .23em; flex: none; }
+  .title { display: inline-flex; align-items: center; gap: .3em; line-height: 1; font-size: 64px; }
+  .connect .card svg { width: min(64vw, 28svh, 300px); }
+  .help .open { font-size: clamp(15px, 2.2vh, 20px); }
+  .help .store { display: none; }
+  .store svg { width: 20px; height: 20px; }
+  a:focus-visible { outline: 2px solid #F1C40F; outline-offset: 3px; }
+  .hint { margin: 14px 16px 0; font-size: .95rem; opacity: .85; text-align: center; min-height: 1.2em; }
+  .hint a { color: #fff; }
+  h1 { margin: 0; font-size: clamp(1.5rem, 6vw, 2.5rem); }
+  .lost p { margin: 1rem 0 0; text-align: center; }
+  .lost a { color: #fff; opacity: .85; }
+  [hidden] { display: none !important; }
+</style>
+<main id="invite" data-iphone={stores.iphone} data-android={stores.android} hidden>
+  <div class="row" id="row"><span class="title" id="title"><img class="logo" id="logo" alt="" hidden /><span class="name" id="name"></span></span></div>
+  <div class="wants" id="wants">wants to Yo</div>
+  <div class="card" role="img" id="card"><svg id="qrcode" viewBox="0 0 260 260"></svg></div>
+  <div class="actions" id="actions">
+    <a class="open" id="open" href="#">Open in Yo</a>
+    <a class="store" href={stores.iphone} aria-label="iPhone beta on TestFlight"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M16.37 12.6c-.02-2.3 1.88-3.4 1.97-3.46-1.07-1.57-2.74-1.78-3.33-1.8-1.42-.14-2.77.83-3.49.83-.72 0-1.83-.81-3.01-.79-1.55.02-2.98.9-3.78 2.29-1.61 2.8-.41 6.94 1.16 9.21.77 1.11 1.68 2.36 2.88 2.31 1.16-.05 1.6-.75 3-.75s1.79.75 3.01.72c1.25-.02 2.04-1.13 2.8-2.24.88-1.29 1.24-2.53 1.26-2.6-.03-.01-2.42-.93-2.47-3.72zM14.07 5.85c.64-.77 1.07-1.85.95-2.92-.92.04-2.03.61-2.69 1.38-.59.68-1.11 1.77-.97 2.83 1.02.08 2.07-.52 2.71-1.29z"/></svg></a>
+    <a class="store" href={stores.android} aria-label="Android beta on Google Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M4.6 2.3c-.3.3-.5.8-.5 1.4v16.6c0 .6.2 1.1.5 1.4l9.3-9.7zM15.1 13.2l2.9 3-11.2 6.3c-.5.3-1 .3-1.4.1zM15.1 10.8 5.4 1.4c.4-.2.9-.2 1.4.1l11.2 6.3zM19.1 8.5l2.4 1.4c.9.5.9 1.8 0 2.3l-2.4 1.4-3.2-3.3z"/></svg></a>
+  </div>
+  <div class="actions" id="back" hidden><a class="continue" id="continue" href="#">Allowed? Continue</a></div>
+  <p class="hint" id="hint"></p>
+</main>
+<main class="lost" id="lost">
+  <h1>{service?.name ?? 'Nothing here.'}</h1>
+  <p>{service ? service.about : <a href="/">justyo.co</a>}</p>
+</main>
+<script>
+  import qrcode from 'qrcode-generator';
+
+  const { iphone: IPHONE, android: ANDROID } = document.getElementById('invite')!.dataset as { iphone: string; android: string };
+  const $ = (id: string) => document.getElementById(id)!;
+
+  // A username (spec 3.3): up to 16 characters of letters, digits, _ and emoji, in one path part. The least is the
+  // hub's (new names from 3); names from before stay, so their invite links work.
+  let part = '';
+  try { part = decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, '')); } catch {}
+  // Characters are counted as graphemes where the browser has Intl.Segmenter, else as code points.
+  const count = 'Segmenter' in Intl ? [...new Intl.Segmenter().segment(part)].length : Array.from(part).length;
+  // A digit may come first ("1abc"), but a name has a letter or emoji: "404" is no invite.
+  // A row with `part`, a line below it, the QR code of `link`, and a button to `app`.
+  function show(part: string, line: string, link: string, app: string) {
+    const name = $('name'), title = $('title');
+    name.textContent = part;
+    $('card').setAttribute('aria-label', `QR code for ${part}: ${link}`);
+    $('invite').hidden = false;
+    $('lost').hidden = true;
+    $('wants').textContent = line;
+    document.title = `${part} ${line}`;
+
+    // The row's colour: the app's palette without its purple, picked by the name's bytes, so a name keeps its colour.
+    const palette = ['#1ABC9C', '#2ECC71', '#3498DB', '#34495E', '#16A085', '#F1C40F', '#2980B9'];
+    const sum = [...new TextEncoder().encode(part)].reduce((a, b) => a + b, 0);
+    $('row').style.background = palette[sum % palette.length];
+
+    // Square modules and eyes in amethyst on white, "Yo" in a cleared centre: error correction H carries it.
+    const code = qrcode(0, 'H');
+    code.addData(link);
+    code.make();
+    const c = code.getModuleCount(), m = 260 / c, mid = (c - 1) / 2;
+    const eye = (r: number, k: number) => (r < 7 && k < 7) || (r < 7 && k >= c - 7) || (r >= c - 7 && k < 7);
+    const clear = (r: number, k: number) => Math.abs(r - mid) < c * 0.13 && Math.abs(k - mid) < c * 0.19;
+    let out = '';
+    for (let r = 0; r < c; r++) for (let k = 0; k < c; k++) {
+      if (!code.isDark(r, k) || eye(r, k) || clear(r, k)) continue;
+      out += `<rect x="${k * m + m * .06}" y="${r * m + m * .06}" width="${m * .88}" height="${m * .88}"/>`;
+    }
+    for (const [r, k] of [[0, 0], [0, c - 7], [c - 7, 0]]) {
+      out += `<rect x="${k * m + m / 2}" y="${r * m + m / 2}" width="${m * 6}" height="${m * 6}" fill="none" stroke="#9B59B6" stroke-width="${m}"/>`;
+      out += `<rect x="${k * m + m * 2}" y="${r * m + m * 2}" width="${m * 3}" height="${m * 3}"/>`;
+    }
+    out += `<text x="130" y="130" dy="0.36em" text-anchor="middle" font-family="Montserrat" font-weight="900" font-size="${m * 6.4}">Yo</text>`;
+    $('qrcode').innerHTML = `<g fill="#9B59B6">${out}</g>`;
+
+    // The name as large as its row allows (at most 180 px and an eighth of the height, so all fits one screen),
+    // measured in the page itself once Montserrat has loaded; "wants to Yo" a third of it.
+    const fit = () => {
+      // The button row and the code as wide as each other: the wider of the two sets it (on a phone the code is
+      // small and the row's own width wins).
+      const actions = $('actions'), svg = $('qrcode') as unknown as SVGElement;
+      actions.style.width = ''; svg.style.width = '';
+      const width = Math.max($('card').offsetWidth, actions.scrollWidth);
+      actions.style.width = width + 'px';
+      svg.style.width = (width - 36) + 'px';
+      $('back').style.width = width + 'px';
+      const max = $('row').clientWidth - 32;
+      title.style.fontSize = '100px';
+      const size = Math.round(Math.max(14, Math.min(180, innerHeight * 0.12, Math.floor(max * 100 / title.getBoundingClientRect().width))));
+      title.style.fontSize = size + 'px';
+      $('wants').style.fontSize = Math.max(20, Math.round(Math.min(size, 120) * 0.34)) + 'px';
+    };
+    fit();
+    document.fonts?.load('700 100px Montserrat', part).then(fit);
+    document.fonts?.ready.then(fit);
+    addEventListener('resize', fit);
+
+    const ua = navigator.userAgent;
+    const android = /Android/i.test(ua);
+    const iphone = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    const open = $('open') as HTMLAnchorElement;
+    open.href = app;
+    // A web address: nothing of Yo to open.
+    if (app.startsWith('https:')) return;
+
+    // Universal and App Links do not fire for a link opened inside Safari on its own site, typed or pasted; the
+    // app's own scheme (yo://NAME: Info.plist CFBundleURLTypes, the Android intent filter) does. If the page is
+    // still in front 1.5 s later, Yo is not installed: on to the store (after installing, Open in Yo again). A
+    // computer has no Yo: it points at the QR code for the phone.
+    open.addEventListener('click', (event) => {
+      if (!iphone && !android) {
+        event.preventDefault();
+        $('hint').textContent = 'Scan the code with your phone to open it in Yo.';
+        return;
+      }
+      let timer = 0;
+      const cancel = () => { clearTimeout(timer); document.removeEventListener('visibilitychange', cancel); };
+      timer = window.setTimeout(() => {
+        cancel();
+        if (!document.hidden) location.href = iphone ? IPHONE : ANDROID;
+      }, 1500);
+      document.addEventListener('visibilitychange', () => { if (document.hidden) cancel(); });
+      window.addEventListener('pagehide', cancel, { once: true });
+    });
+  }
+
+  type Service = { name: string; about: string; bridge: { return_url: string; help_url?: string } | null; logo: string | null };
+  const API = 'https://api.justyo.app';
+  const lost = (why: string) => { document.querySelector('#lost h1')!.textContent = why; };
+
+  async function service(wanted: string) {
+    const answer = await fetch(`${API}/services`, { referrerPolicy: 'no-referrer', credentials: 'omit' });
+    if (!answer.ok) throw new Error();
+    const found = ((await answer.json()) as Service[]).find((s) => s.name.toLowerCase() === wanted.toLowerCase());
+    if (!found) return lost('Nothing here.');
+    const { name, about, bridge, logo } = found;
+    if (logo) {
+      ($('logo') as HTMLImageElement).src = API + logo;
+      $('logo').hidden = false;
+    }
+    const asked = new URLSearchParams(location.search), state = asked.get('state');
+    const help = bridge?.help_url ?? '';
+    if (!state && /^https:\/\/[a-z0-9.-]+\/[A-Za-z0-9._\/-]+$/.test(help)) {
+      // Only the other side can begin to connect: its address, as the code and to read.
+      $('invite').classList.add('help');
+      $('open').textContent = help.slice('https://'.length);
+      show(name, about, help, help);
+      return;
+    }
+    if (!state) {
+      show(name, about, 'https://justyo.co/' + encodeURIComponent(name), 'yo://' + encodeURIComponent(name));
+      return;
+    }
+    const back = bridge?.return_url ?? '';
+    if (state.length < 16 || asked.get('response_type') !== 'code' || (asked.get('redirect_uri') ?? back) !== back
+        || !/^https:\/\/[a-z0-9.-]+\/[A-Za-z0-9._\/-]+$/.test(back)) return lost('Nothing to connect.');
+    // What the app tells the service's account is the hash of the other side's value; the value itself goes back.
+    const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(state)));
+    const code = btoa(String.fromCharCode(...hash)).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
+    const link = `yo://services/${name.toLowerCase()}/connect?code=${code}`;
+    ($('continue') as HTMLAnchorElement).href = `${back}?${new URLSearchParams({ code: state, state })}`;
+    $('back').hidden = false;
+    $('invite').classList.add('connect');
+    show(name, 'wants to connect', link, link);
+  }
+
+  const path = part.split('/');
+  if (path.length === 2 && path[0] === 'services' && path[1]) {
+    service(path[1]).catch(() => lost('Try again later.'));
+  } else if (count >= 1 && count <= 16 && /^[\p{L}\p{M}\p{N}_\p{Extended_Pictographic}\p{Emoji_Component}‍]+$/u.test(part)
+      && /[\p{L}\p{Extended_Pictographic}]/u.test(part)) {
+    // The link as the app writes it (Invite.link): https://justyo.co/NAME, the name percent-encoded so a scanner
+    // reads every script (raw UTF-8 in a QR code comes out garbled in some).
+    const link = 'https://justyo.co/' + encodeURIComponent(part);
+    show(part, 'wants to Yo', link, 'yo://' + encodeURIComponent(part));
+  }
+</script>

@@ -1,6 +1,7 @@
 // The sitemap at /sitemap.xml (public/robots.txt points to it): every page meant for search engines, by its canonical
 // URL (no trailing slash, as the site serves them). Not listed: the redirect stubs, the 404 page and /p/app.
 import type { APIRoute } from 'astro';
+import { services } from '../data/services';
 import { entries, iso } from '../lib/changelog';
 
 const site = 'https://justyo.co';
@@ -13,6 +14,7 @@ export const GET: APIRoute = async () => {
     { path: '/p/changelog', lastmod: posts[0] && iso(posts[0].data.date) },
     ...posts.map((e) => ({ path: `/p/changelog/${e.slug}`, lastmod: iso(e.data.date) })),
     { path: '/services' },
+    ...(await services()).map((s) => ({ path: `/services/${s.name.toLowerCase()}` })),
     { path: '/legal' },
   ];
   const urls = pages

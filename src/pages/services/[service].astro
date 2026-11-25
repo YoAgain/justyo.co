@@ -1,0 +1,20 @@
+---
+// justyo.co/services/NAME: a page for every service there is when the site is built.
+import Head from '../../components/Head.astro';
+import Invite from '../../components/Invite.astro';
+import { services } from '../../data/services';
+
+export async function getStaticPaths() {
+  return (await services()).map((service) => ({ params: { service: service.name.toLowerCase() }, props: service }));
+}
+const { name, about } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <Head title={`Yo – ${name}`} description={about} path={`/services/${name.toLowerCase()}`} weights="700;900" />
+  </head>
+  <body>
+    <Invite service={{ name, about }} />
+  </body>
+</html>
