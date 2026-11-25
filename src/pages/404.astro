@@ -10,6 +10,11 @@ import Invite from '../components/Invite.astro';
     <Head title="Yo" noindex weights="700;900" share image="/og/invite.png" imageAlt="Yo | Yo me on Yo." />
   </head>
   <body>
+    <script is:inline>
+      // GitHub Pages knows /services, not /services/.
+      var path = '/' + location.pathname.replace(/^\/+|\/+$/g, '');
+      if (path !== '/' && path !== location.pathname) location.replace(path + location.search + location.hash);
+    </script>
     <Invite />
   </body>
 </html>
