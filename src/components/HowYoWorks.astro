@@ -6,9 +6,9 @@
 import YoPhone from '../mockups/yo-phone/YoPhone.astro';
 
 const steps = [
-  { screen: 'signup', title: 'Pick a username.' },
+  { screen: 'signup', title: 'Pick a name.' },
   { screen: 'list', title: 'Tap to send Yo.' },
-  { screen: 'code', title: 'Yo-to-Yo encrypted.' },
+  { screen: 'code', title: 'End-to-end encrypted.' },
 ] as const;
 const first = 1; // "Tap to send Yo.": the list first
 ---
@@ -18,13 +18,13 @@ const first = 1; // "Tap to send Yo.": the list first
       <YoPhone screens={['list', 'signup', 'locked', 'code']} screen={steps[first].screen} class="how-phone" />
     </div>
     <div class="side">
-      <h2 id="how-title">How Yo works</h2>
+      <h2 id="how-title">How <em>Yo</em> works</h2>
       <ol class="steps">
         {steps.map((s, i) => (
           <li class:list={{ on: i === first }} data-screen={s.screen}>
             <button type="button" aria-pressed={i === first ? 'true' : 'false'}>
               <span class="num">{i + 1}</span>
-              <b>{s.title}</b>
+              <b set:html={s.title.replace(/\bYo\b/g, '<em>Yo</em>')} />
             </button>
           </li>
         ))}
@@ -150,6 +150,7 @@ const first = 1; // "Tap to send Yo.": the list first
     transition: background-color 0.3s ease, color 0.3s ease;
   }
   .on .num { background: linear-gradient(180deg, #FFE36E, #F1C40F); color: #8E44AD; box-shadow: inset 0 -2px 0 rgba(150, 100, 0, 0.35); }
+  .side :global(em) { font-style: normal; color: #F1C40F; }
   .steps b { font: 900 clamp(1.15rem, 4.6vw, 1.45rem)/1.15 'Montserrat', sans-serif; letter-spacing: -0.005em; }
 
 

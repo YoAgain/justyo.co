@@ -17,7 +17,7 @@
 //   names        the bars, top to bottom: a friend's name, or a group { group: 'FAMILY', members: ['MOM', …] } (default
 //                LEO, MIA, the groups FAMILY and BFFS 💃, EMMA, MAXIMILIAN, ZOE); "+" comes last as a bar
 //   screen       the screen shown: 'list' (default) | 'signup' (just a username) | 'locked' (a sealed Yo on the lock
-//                screen) | 'code' (a sealed Yo: Yo-to-Yo encrypted, Yo over IP, open source)
+//                screen) | 'code' (a sealed Yo: end-to-end encrypted, Yo over IP, open source)
 //   screens      the screens drawn (default: just `screen`); for a phone that changes its screen
 //   tilt         degrees, e.g. -3 (default 0); the phone is rotated as one layer, so the bars' edges stay smooth
 //   width        the phone's width as a CSS length (default: the --w of a parent, else 300px); all inside scales with it
@@ -168,7 +168,7 @@ const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55
           <b class="logo">Yo</b>
           <span class="label">Pick a username</span>
           <span class="field"><i>L</i><i>E</i><i>O</i><u></u></span>
-          <span class="nope"><s>Phone number</s><s>Email</s></span>
+          <span class="nope"><span><i>✓</i> No email</span><span><i>✓</i> No phone</span><span><i>✓</i> E2E encrypted</span></span>
           <span class="start">TAP TO START</span>
         </div>
       </div>
@@ -192,7 +192,7 @@ const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55
         <div class="sealed">
           <span class="env"><span class="flap"></span><span class="seal">Yo</span></span>
           <ul class="facts">
-            <li><svg viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5" fill="currentColor"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg><span>Yo-to-Yo encrypted.<a href="https://signal.org/docs/" target="_blank" rel="noopener">Signal Protocol</a></span></li>
+            <li><svg viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5" fill="currentColor"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg><span>End-to-end encrypted.<a href="https://signal.org/docs/" target="_blank" rel="noopener">Signal Protocol</a></span></li>
             <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.2-3.8-8.5s1.2-6.1 3.8-8.5z" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>YoIP. Yo over IP.<a href="https://github.com/YoAgain/yo/blob/main/spec/v1.md" target="_blank" rel="noopener">Our spec</a></span></li>
             <li><svg viewBox="0 0 16 16"><path fill="currentColor" d={github}/></svg><span>Open source.<a href="https://github.com/YoAgain/yo" target="_blank" rel="noopener">YoAgain/yo</a></span></li>
           </ul>
@@ -669,15 +669,9 @@ const github = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55
   .yo-phone .on .field i:nth-child(1) { transition-delay: 0.45s; }
   .yo-phone .on .field i:nth-child(2) { transition-delay: 0.7s; }
   .yo-phone .on .field i:nth-child(3) { transition-delay: 0.95s; }
-  .yo-phone .nope { display: flex; gap: calc(var(--pw) * 0.025); margin-top: calc(var(--pw) * 0.03); }
-  .yo-phone .nope s {
-    padding: calc(var(--pw) * 0.018) calc(var(--pw) * 0.035);
-    border-radius: 99px;
-    background: rgba(50, 10, 80, 0.25);
-    font: 600 calc(var(--pw) * 0.042)/1.2 'Montserrat', sans-serif;
-    text-decoration-thickness: 1.5px;
-    opacity: 0.8;
-  }
+  .yo-phone .nope { display: flex; flex-direction: column; align-items: center; gap: calc(var(--pw) * 0.012); margin-top: calc(var(--pw) * 0.04); }
+  .yo-phone .nope span { font: 700 calc(var(--pw) * 0.052)/1.2 'Montserrat', sans-serif; color: #fff; }
+  .yo-phone .nope i { font-style: normal; color: #2ECC71; margin-right: 0.2em; }
   .yo-phone .start {
     position: absolute;
     inset: auto 0 0;

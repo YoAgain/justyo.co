@@ -1,7 +1,7 @@
 ---
 // The FAQ at the foot of the home page: the questions as pills that stay put; hovering, focusing or clicking one shows
 // its one-line answer in big plain words under them. The press kit is its own widget (PressKit.astro).
-const qa: [string, string][] = [["What is Yo?", "The simplest app in the world."], ["Who makes Yo?", "Or Arbel made it. <a href=\"https://github.com/YoAgain\" target=\"_blank\" rel=\"noopener\">YoAgain</a> runs it, with his blessing."], ["Is it free?", "Yes. No ads, no tracking."], ["Android?", "On its way!"], ["Can anyone read my Yos?", "No. <a href=\"#security\" data-tech>Yo-to-Yo encrypted.</a>"], ["Photos?", "Tap the camera, then a name."], ["Groups?", "Tap +, then Group."], ["Usernames?", "3 to 16 letters, numbers or emoji. Like 🦄Mia, Pizza4Life or 🐐🐐🐐."]];
+const qa: [string, string][] = [["What is Yo?", "The simplest app in the world."], ["Who makes Yo?", "Or Arbel made it. <a href=\"https://github.com/YoAgain\" target=\"_blank\" rel=\"noopener\">YoAgain</a> runs it, with his blessing."], ["Is it free?", "Yes. No ads, no tracking."], ["Android?", "On its way!"], ["Can anyone read my Yos?", "No. <a href=\"#security\" data-tech>End-to-end encrypted.</a>"], ["Photos?", "Tap the camera, then a name."], ["Groups?", "Tap +, then Group."], ["Usernames?", "3 to 16 letters, numbers or emoji. Like 🦄Mia, Pizza4Life or 🐐🐐🐐."]];
 ---
 <section class="faq" id="faq" aria-labelledby="faq-title">
   <h2 id="faq-title">Questions</h2>
@@ -17,7 +17,7 @@ const qa: [string, string][] = [["What is Yo?", "The simplest app in the world."
   </div>
 </section>
 <script>
-  // "Yo-to-Yo encrypted." opens the technical details pop-up (Security sits just above, so a jump there shows little);
+  // "End-to-end encrypted." opens the technical details pop-up (Security sits just above, so a jump there shows little);
   // without JavaScript it is a plain link to the Security section.
   document.querySelectorAll<HTMLAnchorElement>('.faq a[data-tech]').forEach((a) =>
     a.addEventListener('click', (e) => {
