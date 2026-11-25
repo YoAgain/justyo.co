@@ -28,9 +28,9 @@ import { stores } from '../data/stores';
       .card svg { display: block; width: min(64vw, 34svh, 300px); height: auto; }
       /* A phone cannot scan its own screen: the code smaller there, the button higher. */
       @media (pointer: coarse) and (max-width: 700px) { .card svg { width: min(44vw, 22svh); } }
-      .actions { margin-top: var(--gap); display: flex; gap: 6px; height: 58px; }
+      .actions { margin-top: var(--gap); display: flex; gap: 6px; height: 58px; width: max-content; }
       .actions a { display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; }
-      .open { flex: 1; padding: 0 30px; background: #2ECC71; font-size: clamp(17px, 2.6vh, 22px); white-space: nowrap; }
+      .open { flex: 1; padding: 0 22px; background: #2ECC71; font-size: clamp(17px, 2.6vh, 22px); white-space: nowrap; }
       .store { width: 58px; flex: none; background: rgba(0, 0, 0, .22); }
       .store svg { width: 20px; height: 20px; }
       a:focus-visible { outline: 2px solid #F1C40F; outline-offset: 3px; }
@@ -110,7 +110,13 @@ import { stores } from '../data/stores';
         // The name as large as its row allows (at most 180 px and an eighth of the height, so all fits one screen),
         // measured in the page itself once Montserrat has loaded; "wants to Yo" a third of it.
         const fit = () => {
-          $('actions').style.width = $('card').offsetWidth + 'px';
+          // The button row and the code as wide as each other: the wider of the two sets it (on a phone the code is
+          // small and the row's own width wins).
+          const actions = $('actions'), svg = $('qrcode') as unknown as SVGElement;
+          actions.style.width = ''; svg.style.width = '';
+          const width = Math.max($('card').offsetWidth, actions.scrollWidth);
+          actions.style.width = width + 'px';
+          svg.style.width = (width - 36) + 'px';
           const max = $('row').clientWidth - 32;
           name.style.fontSize = '100px';
           const size = Math.round(Math.max(14, Math.min(180, innerHeight * 0.12, Math.floor(max * 100 / name.getBoundingClientRect().width))));
