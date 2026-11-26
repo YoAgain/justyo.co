@@ -17,7 +17,7 @@ export const operator = {
 
 export const services = [
   { name: 'Hetzner', url: 'https://www.hetzner.com/legal/privacy-policy', role: 'Server (Germany)', what: 'Hosts the server in Germany.' },
-  { name: 'Cloudflare', url: 'https://www.cloudflare.com/privacypolicy/', role: 'Connection, sees what the Yo Hub sees', what: 'Carries the connection to the server and protects it against attacks. It sees what the Yo Hub sees (IP addresses, who writes to whom, looked-up names), never message content, and keeps logs for up to about 30 days.' },
+  { name: 'Cloudflare', url: 'https://www.cloudflare.com/privacypolicy/', role: 'Connection, sees what the Yo Hub sees', what: 'Carries the connection to the server and protects it against attacks. It sees what the Yo Hub sees (IP addresses, the recipient of each message, looked-up names), never message content, and keeps logs for up to about 30 days.' },
   { name: 'Apple', url: 'https://www.apple.com/legal/privacy/', role: 'Push, TestFlight, App Store', what: "Delivers push notifications, TestFlight builds and the App Store, under Apple's own privacy policy." },
   { name: 'Google', url: 'https://policies.google.com/privacy', role: 'Android only: push, Google Play, Android backup', what: "Only for the Android app from Google Play: delivers push notifications (Firebase Cloud Messaging), Google Play, and Android's backup of your account (Block Store), under Google's own privacy policy." },
   { name: 'GitHub', url: 'https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement', role: 'Hosts this site', what: "GitHub, Inc. hosts this website on GitHub Pages; it processes visitors' IP addresses in its server logs." },
