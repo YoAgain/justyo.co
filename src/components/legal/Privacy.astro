@@ -3,7 +3,7 @@ import { operator, owner, services, lastUpdated } from '../../data/legal';
 // The services, split: the ones behind the app and the Yo Hub, and the ones behind this website.
 const roles: Record<string, string> = {
   Hetzner: 'runs the Yo Hub · Germany',
-  Cloudflare: 'connection to the Yo Hub, sees IPs · International',
+  Cloudflare: 'connection to the Yo Hub, sees what the hub sees, never content · International',
   Apple: 'iPhone only: push, TestFlight, App Store · International',
   Google: 'Android from Google Play only: push (Firebase Cloud Messaging), Google Play, Android backup (Block Store) · International',
   GitHub: 'hosts this site, IP addresses in its logs · USA · legitimate interest',
