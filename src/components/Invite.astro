@@ -70,7 +70,7 @@ const { service } = Astro.props;
   const { iphone: IPHONE, android: ANDROID } = document.getElementById('invite')!.dataset as { iphone: string; android: string };
   const $ = (id: string) => document.getElementById(id)!;
 
-  // A username (spec 3.3): up to 16 characters of letters, digits, _ and emoji, in one path part. The least is the
+  // A username (spec 2.2): up to 16 characters of letters, digits, _ and emoji, in one path part. The least is the
   // hub's (new names from 3); names from before stay, so their invite links work.
   let part = '';
   try { part = decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, '')); } catch {}
